@@ -1,0 +1,42 @@
+{
+  "name": "skill-nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "build": "npx tsc",
+    "start": "node dist/server.js",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/server.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Siuccio/skill-nodejs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Siuccio/skill-nodejs/issues"
+  },
+  "homepage": "https://github.com/Siuccio/skill-nodejs#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "h2": "^0.3.0",
+    "mongoose": "^8.10.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.13.8",
+    "@types/sqlite3": "^5.1.0",
+    "concurrently": "^9.1.2",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.9",
+    "ts-jest": "^29.2.6",
+    "typescript": "^5.8.2"
+  }
+}
