@@ -1,37 +1,20 @@
-// src/database/database.ts
-import sqlite3 from "sqlite3";
+import { DataSource } from "typeorm";
+import { User } from "../entity/user.entity";
 
-let db: sqlite3.Database;
+export const AppDataSource = new DataSource({
+  type: "sqlite",
+  database: "./mydb.db",
+  synchronize: true,
+  logging: false,
+  entities: [User],
+  migrations: [],
+  subscribers: [],
+});
 
-export const getDb = (): Promise<sqlite3.Database> => {
-  return new Promise((resolve, reject) => {
-    if (db) {
-      resolve(db);
-      return;
-    }
-    db = new sqlite3.Database("./mydb.db", (err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      console.log("Connected to the mydb database.");
-      resolve(db);
-    });
+AppDataSource.initialize()
+  .then(() => {
+    console.log("Data Source has been initialized!");
+  })
+  .catch((err) => {
+    console.error("Error during Data Source initialization:", err);
   });
-};
-
-export const initDb = async () => {
-  const database = await getDb();
-  return new Promise<void>((resolve, reject) => {
-    database.run(
-      "CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT); CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, surname TEXT, username TEXT);",
-      (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      }
-    );
-  });
-};

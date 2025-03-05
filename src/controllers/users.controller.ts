@@ -1,21 +1,34 @@
-// src/controllers/items.controller.ts
 import { Request, Response } from "express";
-import * as UsersService from "../services/users.service";
+import { UserService } from "../services/users.service";
+import { UserDao } from "../dao/user.dao";
+import { User } from "../models/user.model";
 
-export const getUser = async (req: Request, res: Response) => {
-  try {
-    const users = await UsersService.getUsers();
-    res.json(users);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-};
+export class UserController {
+  private userService: UserService;
 
-export const createUser = async (req: Request, res: Response) => {
-  try {
-    const id = await UsersService.createUser(req.body);
-    res.json({ id });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
+  constructor() {
+    const userDao = new UserDao();
+    this.userService = new UserService(userDao);
   }
-};
+
+  async getAllUsers(req: Request, res: Response): Promise<void> {
+    try {
+      const users = await this.userService.getAllUsers();
+      res.json(users);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async createUser(req: Request, res: Response): Promise<void> {
+    try {
+      const user: User = req.body as User;
+      const createdUser = await this.userService.createUser(user);
+      res.status(201).json(createdUser);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // Aggiungi altri metodi del controller
+}

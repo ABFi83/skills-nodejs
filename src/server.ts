@@ -1,19 +1,16 @@
-import express from "express";
-import * as ItemsController from "./controllers/items.controller";
-import * as UsersController from "./controllers/users.controller";
-import { getDb, initDb } from "./database/database";
+import express, { Application } from "express";
+import bodyParser from "body-parser";
+import { UserController } from "./controllers/users.controller";
 
-const app = express();
-const port = 3001;
+const app: Application = express();
+app.use(bodyParser.json());
 
-app.use(express.json());
+const userController = new UserController();
 
-app.get("/items", ItemsController.getItems);
-app.post("/items", ItemsController.createItem);
-app.get("/users", UsersController.getUser);
-app.post("/users", UsersController.createUser);
+app.get("/users", (req, res) => userController.getAllUsers(req, res));
+app.post("/users", (req, res) => userController.createUser(req, res));
+
+const port = 3000;
 app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+  console.log(`Server is running on port ${port}`);
 });
-
-initDb();
