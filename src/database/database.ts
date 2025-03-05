@@ -24,7 +24,7 @@ export const initDb = async () => {
   const database = await getDb();
   return new Promise<void>((resolve, reject) => {
     database.run(
-      "CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)",
+      "CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT); CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, surname TEXT, username TEXT);",
       (err) => {
         if (err) {
           reject(err);
