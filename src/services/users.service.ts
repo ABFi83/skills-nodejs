@@ -5,11 +5,12 @@ import { User } from "../models/user.model";
 export class UserService {
   private userDao: UserDao;
 
-  constructor(userDao: UserDao) {
-    this.userDao = userDao;
+  constructor() {
+    this.userDao = new UserDao();
   }
 
   async getAllUsers(): Promise<User[]> {
+    console.log("ciao");
     return this.userDao.getAllUsers();
   }
 

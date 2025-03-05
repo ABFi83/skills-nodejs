@@ -7,8 +7,7 @@ export class UserController {
   private userService: UserService;
 
   constructor() {
-    const userDao = new UserDao();
-    this.userService = new UserService(userDao);
+    this.userService = new UserService();
   }
 
   async getAllUsers(req: Request, res: Response): Promise<void> {
