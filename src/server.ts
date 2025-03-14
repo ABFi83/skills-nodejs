@@ -10,6 +10,19 @@ const userController = new UserController();
 app.get("/users", (req, res) => userController.getAllUsers(req, res));
 app.post("/users", (req, res) => userController.createUser(req, res));
 
+app.get("/users", (req, res) => userController.getAllUsers(req, res));
+
+// Crea un nuovo utente
+app.post("/users", (req, res) => userController.createUser(req, res));
+
+// Ottieni il dettaglio di un utente per ID
+app.get("/users/:id", (req, res) => userController.getUserDetail(req, res));
+
+// Ottieni i progetti di un utente
+app.get("/users/:id/projects", (req, res) =>
+  userController.getUserProjects(req, res)
+);
+
 const port = 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
