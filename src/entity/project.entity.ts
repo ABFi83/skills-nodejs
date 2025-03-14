@@ -4,6 +4,7 @@ import {
   Column,
   ManyToMany,
   OneToMany,
+  JoinTable,
 } from "typeorm";
 import { User } from "./user.entity";
 import { Skill } from "./skill.entity";
@@ -20,6 +21,7 @@ export class Project {
   users: User[] | undefined;
 
   @ManyToMany(() => Skill, (skill) => skill.projects)
+  @JoinTable() // Solo qui! NON metterlo su `Skill`
   skills: Skill[] | undefined;
 
   @OneToMany(() => Evaluation, (evaluation) => evaluation.project, {

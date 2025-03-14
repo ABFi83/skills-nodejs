@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  JoinTable,
+} from "typeorm";
 import { Project } from "./project.entity";
 @Entity()
 export class User {
@@ -14,7 +20,8 @@ export class User {
   @Column()
   username: string;
 
-  @ManyToMany(() => Project, (project: { users: any }) => project.users)
+  @ManyToMany(() => Project, (project) => project.users)
+  @JoinTable()
   projects: Project[] | undefined;
 
   constructor(username: string, surname: string, name?: string) {

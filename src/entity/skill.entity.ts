@@ -11,7 +11,7 @@ import { Value } from "./values.entity";
 @Entity()
 export class Skill {
   @PrimaryGeneratedColumn()
-  id: number = 0;
+  id: number | undefined;
 
   @Column({ nullable: true })
   name: string = "";
