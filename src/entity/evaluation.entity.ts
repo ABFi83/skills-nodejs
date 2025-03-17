@@ -5,6 +5,7 @@ import {
   Column,
   CreateDateColumn,
   OneToMany,
+  JoinTable,
 } from "typeorm";
 import { User } from "./user.entity";
 import { Project } from "./project.entity";
@@ -17,13 +18,16 @@ export class Evaluation {
   id: number = 0;
 
   @ManyToOne(() => User, { nullable: false })
+  @JoinTable()
   user: User;
 
   @ManyToOne(() => Project, { nullable: false })
+  @JoinTable()
   project: Project;
 
   @OneToMany(() => Value, (value) => value.evaluation)
-  values: Value[] | undefined;
+  @JoinTable()
+  values?: Value[];
 
   @CreateDateColumn()
   evaluationDate: Date; // Data della valutazione

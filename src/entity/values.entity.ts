@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  JoinTable,
 } from "typeorm";
 import { Evaluation } from "./evaluation.entity"; // Assicurati che il percorso sia corretto
 import { Skill } from "./skill.entity";
@@ -21,6 +22,7 @@ export class Value {
 
   // Relazione molti a uno con Evaluation
   @ManyToOne(() => Evaluation, (evaluation) => evaluation.values)
+  @JoinTable()
   evaluation: Evaluation; // Una valutazione può avere molti valori
 
   constructor(skill: Skill, value: number, evaluation: Evaluation) {

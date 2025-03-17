@@ -17,7 +17,8 @@ export class Project {
   @Column()
   name: string = "";
 
-  @ManyToMany(() => User, (user) => user.projects, { lazy: true })
+  @ManyToMany(() => User, (user) => user.projects)
+  @JoinTable()
   users: User[] | undefined;
 
   @ManyToMany(() => Skill, (skill) => skill.projects)

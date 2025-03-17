@@ -20,9 +20,10 @@ export class EvaluationService {
       // Trova la valutazione più recente per il progetto e l'utente specificato
       const evaluation = await this.evaluationRepository.findOne({
         where: { project: { id: projectId }, user: { id: userId } },
+        relations: ["user", "project", "values", "values.skill"],
         order: { evaluationDate: "DESC" }, // Ordina per data in modo che la più recente sia la prima
       });
-
+      console.log(projectId, userId, evaluation);
       return evaluation || null; // Restituisce la valutazione trovata o null se non esiste
     } catch (error) {
       console.error("Errore durante il recupero della valutazione:", error);

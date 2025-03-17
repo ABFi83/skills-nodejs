@@ -6,28 +6,32 @@ import { User } from "../entity/user.entity";
 import { EvaluationService } from "./evalutaion.service";
 import { Value } from "../entity/values.entity";
 import { Skill } from "../entity/skill.entity";
+import { Evaluation } from "../entity/evaluation.entity";
+import e from "express";
 
 export class ProjectService {
   private projectRepository: Repository<Project>;
   private skillRepository: Repository<Skill>;
   private userRepository: Repository<User>;
-  private evaluationService: any;
+  private evaluationRepository: Repository<Evaluation>;
+  private valueRepository: Repository<Value>;
+  private evaluationService: EvaluationService;
   constructor() {
     this.projectRepository = AppDataSource.getRepository(Project); // Ottieni il repository per Project
     this.evaluationService = new EvaluationService();
     this.skillRepository = AppDataSource.getRepository(Skill);
     this.evaluationService = new EvaluationService();
     this.userRepository = AppDataSource.getRepository(User);
+    this.evaluationRepository = AppDataSource.getRepository(Evaluation);
+    this.valueRepository = AppDataSource.getRepository(Value);
   }
 
   async getProjectsByUser(userId: number): Promise<ProjectResponse[]> {
     try {
-      console.log("userId", userId);
       const user = await this.userRepository.findOne({
         where: { id: userId },
         relations: ["projects"], // Assicurati che la relazione "projects" sia caricata
       });
-      console.log("user", user);
       // Verifica se l'utente esiste
       if (!user || !user.projects) {
         throw new Error("L'utente non esiste o non ha progetti associati.");
@@ -46,39 +50,36 @@ export class ProjectService {
               userId
             );
 
-          // Se non ci sono valutazioni, ritorna `null`
-          if (!latestEvaluation) return null;
-
           let response: ProjectResponse = {
             id: project.id.toString(),
             projectName: project.name,
-            ratingAverage: this.calculateRatingAverage(
-              latestEvaluation.values ?? []
-            ),
-            evaluations: [
-              {
-                id: latestEvaluation.id.toString(),
-                label: latestEvaluation.evaluationDate, // La data potrebbe essere rappresentata come stringa
-                values:
-                  latestEvaluation.values?.map((value: Value) => ({
-                    id: value.id.toString(),
-                    skill: value.skill,
-                    value: value.value,
-                  })) ?? [],
-              },
-            ],
-            labelEvaluations:
-              latestEvaluation.values?.map((label: Value) => ({
-                id: label.id.toString(),
-                label: label.skill.name,
-                shortLabel: label.skill.shortName,
-              })) ?? [],
+            ratingAverage: 0,
           };
+          // Se non ci sono valutazioni, ritorna `null`
+          if (!latestEvaluation) return response;
+          console.log(latestEvaluation);
+          response.evaluations = [
+            {
+              id: latestEvaluation.id.toString(),
+              label: latestEvaluation.evaluationDate.toString(), // La data potrebbe essere rappresentata come stringa
+              values:
+                latestEvaluation.values?.map((value: Value) => ({
+                  id: value.id.toString(),
+                  skill: value.skill.name,
+                  value: value.value,
+                })) ?? [],
+            },
+          ];
+          response.labelEvaluations =
+            latestEvaluation.values?.map((label: Value) => ({
+              id: label.id.toString(),
+              label: label.skill.name,
+              shortLabel: label.skill.shortName,
+            })) ?? [];
+
           return response;
         })
       );
-
-      // Rimuove eventuali `null`
       return projectResponses.filter((p): p is ProjectResponse => p !== null);
     } catch (error) {
       console.error(
@@ -137,14 +138,13 @@ export class ProjectService {
   }
 
   async createProject(project: Partial<Project>): Promise<Project> {
+    let newProject: Project;
     try {
       const user = await this.userRepository.findOne({
         where: { id: 1 },
         relations: ["projects"], // Assicurati che la relazione "projects" sia caricata
       });
-      if (user) {
-        project.users = [user];
-      }
+
       project.name = "Progetto di prova";
       let skill1 = await this.skillRepository.findOne({
         where: { name: "JavaScript" },
@@ -170,11 +170,33 @@ export class ProjectService {
 
       project.skills = [skill1, skill2];
 
-      return await this.projectRepository.save(project);
+      newProject = await this.projectRepository.save(project);
+      if (!user) {
+        throw new Error("Utente non trovato!");
+      }
+      let value: Value = this.valueRepository.create({
+        skill: skill1,
+        value: 10,
+      } as Partial<Value>);
+      await this.valueRepository.save(value);
+
+      let evaluation: Evaluation = this.evaluationRepository.create({
+        project: newProject,
+        user: user,
+        values: [value],
+        evaluationDate: new Date(),
+      });
+      evaluation = await this.evaluationRepository.save(evaluation);
+
+      // Associa l'utente al progetto
+      user.projects = [...(user.projects || []), newProject];
+      await this.userRepository.save(user); // ✅ Salva l'utente con il progetto associato
     } catch (error) {
       console.error("Errore durante l'aggiornamento del progetto:", error);
       throw new Error("Non è stato possibile aggiornare il progetto.");
     }
+
+    return newProject;
   }
 
   // **Delete**: Elimina un progetto per ID

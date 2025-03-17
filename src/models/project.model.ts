@@ -3,8 +3,8 @@ export interface ProjectResponse {
   projectName: string;
   ratingAverage: number;
   //role: string;
-  evaluations: EvaluationResponse[];
-  labelEvaluations: LabelResponse[];
+  evaluations?: EvaluationResponse[];
+  labelEvaluations?: LabelResponse[];
 }
 export interface LabelResponse {
   id: string;
