@@ -4,6 +4,8 @@ import { UserController } from "./controllers/users.controller";
 import { ProjectController } from "./controllers/projects.controller";
 
 const app: Application = express();
+const cors = require("cors");
+app.use(cors());
 app.use(bodyParser.json());
 
 const userController = new UserController();
@@ -26,7 +28,7 @@ app.get("/users/:id/projects", (req, res) =>
 
 app.post("/project", (req, res) => projectController.createProject(req, res));
 
-const port = 3000;
+const port = 3001;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
