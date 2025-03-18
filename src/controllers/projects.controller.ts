@@ -19,5 +19,15 @@ export class ProjectController {
     }
   }
 
+  async deleteProject(req: Request, res: Response): Promise<void> {
+    try {
+      const projectId = parseInt(req.params.id);
+      const response = await this.projectService.deleteProject(projectId);
+      res.json(response);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   // Aggiungi altri metodi del controller
 }

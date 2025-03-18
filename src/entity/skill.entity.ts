@@ -11,13 +11,11 @@ import { Value } from "./values.entity";
 @Entity()
 export class Skill {
   @PrimaryGeneratedColumn()
-  id: number | undefined;
-
+  id!: number;
   @Column({ nullable: true })
   name: string = "";
   @Column({ nullable: true })
   shortName: string = "";
-
   @ManyToMany(() => Project, (project) => project.skills)
   projects: Project[];
 

@@ -1,34 +1,36 @@
+import { Evaluation } from "./evaluation.entity";
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   ManyToMany,
-  OneToMany,
   JoinTable,
+  ManyToOne,
+  OneToMany,
 } from "typeorm";
 import { User } from "./user.entity";
 import { Skill } from "./skill.entity";
-import { Evaluation } from "./evaluation.entity";
+import e from "express";
 @Entity()
 export class Project {
-  @PrimaryGeneratedColumn()
-  id: number = 0;
+  @PrimaryGeneratedColumn("increment")
+  id!: number;
 
   @Column()
   name: string = "";
 
   @ManyToMany(() => User, (user) => user.projects)
-  @JoinTable()
   users: User[] | undefined;
 
   @ManyToMany(() => Skill, (skill) => skill.projects)
-  @JoinTable() // Solo qui! NON metterlo su `Skill`
-  skills: Skill[] | undefined;
+  @JoinTable()
+  skills?: Skill[];
 
   @OneToMany(() => Evaluation, (evaluation) => evaluation.project, {
-    lazy: true,
+    cascade: true,
+    onDelete: "CASCADE",
   })
-  evaluations: Evaluation[] | undefined;
+  evaluation?: Evaluation[];
 
   constructor(name: string) {
     if (name) {

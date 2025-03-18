@@ -15,17 +15,20 @@ import { Value } from "./values.entity";
 @Entity()
 export class Evaluation {
   @PrimaryGeneratedColumn()
-  id: number = 0;
+  id!: number;
 
   @ManyToOne(() => User, { nullable: false })
   @JoinTable()
   user: User;
 
-  @ManyToOne(() => Project, { nullable: false })
+  @ManyToOne(() => Project, { nullable: false, onDelete: "CASCADE" })
   @JoinTable()
   project: Project;
 
-  @OneToMany(() => Value, (value) => value.evaluation)
+  @OneToMany(() => Value, (value) => value.evaluation, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
   @JoinTable()
   values?: Value[];
 

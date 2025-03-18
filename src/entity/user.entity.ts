@@ -9,7 +9,7 @@ import { Project } from "./project.entity";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number = 0;
+  id!: number;
 
   @Column({ nullable: true })
   name?: string;

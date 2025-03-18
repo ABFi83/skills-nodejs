@@ -12,22 +12,16 @@ import { Skill } from "./skill.entity";
 @Entity()
 export class Value {
   @PrimaryGeneratedColumn()
-  id: number = 0;
+  id!: number;
 
   @ManyToOne(() => Skill, { nullable: false })
-  skill: Skill;
+  skill!: Skill;
 
   @Column()
-  value: number; // Il valore numerico associato alla skill
+  value!: number;
 
-  // Relazione molti a uno con Evaluation
-  @ManyToOne(() => Evaluation, (evaluation) => evaluation.values)
-  @JoinTable()
-  evaluation: Evaluation; // Una valutazione può avere molti valori
-
-  constructor(skill: Skill, value: number, evaluation: Evaluation) {
-    this.skill = skill;
-    this.value = value;
-    this.evaluation = evaluation;
-  }
+  @ManyToOne(() => Evaluation, (evaluation) => evaluation.values, {
+    onDelete: "CASCADE",
+  })
+  evaluation!: Evaluation;
 }
