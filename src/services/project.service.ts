@@ -16,11 +16,11 @@ export class ProjectService {
   private evaluationRepository: Repository<Evaluation>;
   private valueRepository: Repository<Value>;
   private evaluationService: EvaluationService;
+
   constructor() {
     this.projectRepository = AppDataSource.getRepository(Project); // Ottieni il repository per Project
     this.evaluationService = new EvaluationService();
     this.skillRepository = AppDataSource.getRepository(Skill);
-    this.evaluationService = new EvaluationService();
     this.userRepository = AppDataSource.getRepository(User);
     this.evaluationRepository = AppDataSource.getRepository(Evaluation);
     this.valueRepository = AppDataSource.getRepository(Value);
@@ -44,10 +44,14 @@ export class ProjectService {
       }
 
       const projects = user.projects;
-
       const projectResponses = await Promise.all(
         projects.map(async (project: Project) => {
-          console.log(project);
+          let lastEva: Evaluation | null =
+            await this.evaluationService.getLastEvaluationByUserAndProject(
+              user.id,
+              project.id
+            );
+
           let response: ProjectResponse = {
             id: project.id ? project.id.toString() : "",
             projectName: project.name,
@@ -62,13 +66,13 @@ export class ProjectService {
                   return label;
                 })
               : [],
-            evaluations: project.evaluation
-              ? project.evaluation.map((evaluation: Evaluation) => {
-                  let eva = {
-                    id: evaluation.id.toString(),
-                    label: evaluation.evaluationDate.toLocaleDateString(), //01/01/2024
-                    values: evaluation.values
-                      ? evaluation.values.map((value: Value) => {
+            evaluations: lastEva
+              ? [
+                  {
+                    id: lastEva.id.toString(),
+                    label: lastEva.evaluationDate.toLocaleDateString(), //01/01/2024
+                    values: lastEva.values
+                      ? lastEva.values.map((value: Value) => {
                           let v = {
                             id: value.id?.toString(),
                             skill: value.skill.name,
@@ -77,9 +81,8 @@ export class ProjectService {
                           return v;
                         })
                       : [],
-                  };
-                  return eva;
-                })
+                  },
+                ]
               : [],
           };
           return response;
@@ -163,7 +166,18 @@ export class ProjectService {
         skill2 = await this.skillRepository.save(skill2);
       }
 
-      project.skills = [skill1, skill2];
+      let skill4 = await this.skillRepository.findOne({
+        where: { name: "Java" },
+      });
+      if (!skill4) {
+        skill4 = this.skillRepository.create({
+          name: "Java",
+          shortName: "JA",
+        });
+        skill4 = await this.skillRepository.save(skill4);
+      }
+
+      project.skills = [skill1, skill2, skill4];
       newProject = await this.projectRepository.save(project);
 
       let evaluation = this.evaluationRepository.create({
@@ -185,7 +199,42 @@ export class ProjectService {
         evaluation: evaluation,
       });
       await this.valueRepository.save(value1);
+      let value4 = this.valueRepository.create({
+        skill: skill4,
+        value: 8,
+        evaluation: evaluation,
+      });
+      await this.valueRepository.save(value4);
 
+      let yestarday = new Date();
+      yestarday.setDate(yestarday.getDate() - 1);
+      let evaluationOld = this.evaluationRepository.create({
+        evaluationDate: yestarday,
+        user: user,
+        project: newProject,
+      });
+      evaluationOld = await this.evaluationRepository.save(evaluationOld);
+
+      let valueOld = this.valueRepository.create({
+        skill: skill1,
+        value: 7,
+        evaluation: evaluationOld,
+      });
+      await this.valueRepository.save(valueOld);
+      let valueOld1 = this.valueRepository.create({
+        skill: skill2,
+        value: 9,
+        evaluation: evaluationOld,
+      });
+      await this.valueRepository.save(valueOld1);
+
+      await this.valueRepository.save(valueOld);
+      let valueOld2 = this.valueRepository.create({
+        skill: skill4,
+        value: 2,
+        evaluation: evaluationOld,
+      });
+      await this.valueRepository.save(valueOld2);
       return newProject.id;
     } catch (error) {
       console.error("Errore durante l'aggiornamento del progetto:", error);
@@ -193,7 +242,6 @@ export class ProjectService {
     }
   }
 
-  // **Delete**: Elimina un progetto per ID
   async deleteProject(id: number): Promise<void> {
     try {
       const project = await this.projectRepository.findOne({
@@ -204,6 +252,70 @@ export class ProjectService {
     } catch (error) {
       console.error("Errore durante l'eliminazione del progetto:", error);
       throw new Error("Non è stato possibile eliminare il progetto.");
+    }
+  }
+
+  async getProjectsDetail(projectId: number): Promise<ProjectResponse> {
+    try {
+      const project = await this.projectRepository.findOne({
+        where: { id: projectId },
+        relations: [
+          "users",
+          "skills",
+          "evaluation",
+          "evaluation.values",
+          "evaluation.values.skill",
+        ],
+      });
+      if (!project) {
+        throw new Error("Progetto non trovato.");
+      }
+      project.evaluation =
+        project.evaluation?.sort(
+          (a, b) => b.evaluationDate.getTime() - a.evaluationDate.getTime()
+        ) || [];
+      project.skills = project.skills?.sort((a, b) => b.id - a.id) || [];
+
+      let response: ProjectResponse = {
+        id: project.id ? project.id.toString() : "",
+        projectName: project.name,
+        ratingAverage: 0,
+        labelEvaluations: project.skills
+          ? project.skills.map((skill: Skill) => {
+              let label = {
+                id: skill.id.toString(),
+                label: skill.name,
+                shortLabel: skill.shortName,
+              };
+              return label;
+            })
+          : [],
+        evaluations: project.evaluation?.map((evaluation: Evaluation) => {
+          evaluation.values =
+            evaluation.values?.sort((a, b) => b.skill.id - a.skill.id) || [];
+          return {
+            id: evaluation.id.toString(),
+            label: evaluation.evaluationDate.toLocaleDateString(), //01/01/2024
+            values: evaluation.values
+              ? evaluation.values.map((value: Value) => {
+                  let v = {
+                    id: value.id?.toString(),
+                    skill: value.skill.name,
+                    value: value.value,
+                  };
+                  return v;
+                })
+              : [],
+          };
+        }),
+      };
+      return response;
+    } catch (error) {
+      console.error(
+        "Errore durante il recupero dei progetti per l'utente:",
+        error
+      );
+      throw new Error("Non è stato possibile recuperare i progetti.");
     }
   }
 }

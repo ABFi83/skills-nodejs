@@ -35,6 +35,9 @@ app.post("/project", (req, res) => projectController.createProject(req, res));
 app.delete("/project/:id", (req, res) =>
   projectController.deleteProject(req, res)
 );
+app.get("/project/:id", (req, res) =>
+  projectController.getProjectsDetails(req, res)
+);
 
 app.get("/skills", (req, res) => skillsController.getAllSkills(req, res));
 app.get("/evaluation", (req, res) =>

@@ -1,6 +1,7 @@
 import { Repository } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { Evaluation } from "../entity/evaluation.entity";
+import e from "express";
 
 export class EvaluationService {
   private evaluationRepository: Repository<Evaluation>;
@@ -18,6 +19,28 @@ export class EvaluationService {
     } catch (error) {
       console.error("Errore durante il recupero delle valutazioni:", error);
       throw new Error("Non è stato possibile recuperare le valutazioni.");
+    }
+  }
+
+  async getLastEvaluationByUserAndProject(
+    userId: number,
+    projectId: number
+  ): Promise<Evaluation | null> {
+    try {
+      return await this.evaluationRepository.findOne({
+        where: {
+          user: { id: userId },
+          project: { id: projectId },
+        },
+        order: { evaluationDate: "DESC" }, // Ordina per data in ordine decrescente
+        relations: ["user", "project", "values", "values.skill"], // Carica le relazioni se necessarie
+      });
+    } catch (error) {
+      console.error(
+        "Errore durante il recupero dell'ultima valutazione:",
+        error
+      );
+      throw new Error("Non è stato possibile recuperare l'ultima valutazione.");
     }
   }
 

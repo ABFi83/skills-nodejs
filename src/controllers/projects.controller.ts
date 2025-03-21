@@ -29,5 +29,13 @@ export class ProjectController {
     }
   }
 
-  // Aggiungi altri metodi del controller
+  async getProjectsDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await this.projectService.getProjectsDetail(projectId);
+      res.json(project);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
