@@ -196,7 +196,7 @@ export class ProjectService {
       });
       if (!role) {
         role = this.roleRepository.create({
-          code: "001",
+          code: "TL",
           name: "Team Leader",
         });
         role = await this.roleRepository.save(role);
@@ -298,7 +298,8 @@ export class ProjectService {
       const project = await this.projectRepository.findOne({
         where: { id: projectId },
         relations: [
-          "users",
+          "userProjects",
+          "userProjects.role",
           "skills",
           "evaluation",
           "evaluation.values",
@@ -317,6 +318,11 @@ export class ProjectService {
       let response: ProjectResponse = {
         id: project.id,
         projectName: project.name,
+        role: {
+          id: project.userProjects[0].role.id,
+          code: project.userProjects[0].role.code,
+          name: project.userProjects[0].role.name,
+        },
         labelEvaluations: project.skills
           ? project.skills.map((skill: Skill) => {
               let label = {
