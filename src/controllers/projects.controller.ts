@@ -11,9 +11,9 @@ export class ProjectController {
 
   async createProject(req: Request, res: Response): Promise<void> {
     try {
-      const project: Project = req.body as Project;
-      const response = await this.projectService.createProject(project);
-      res.json(response);
+      //const project: Project = req.body as Project;
+      //const response = await this.projectService.createProject(project);
+      //res.json(response);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

@@ -48,7 +48,8 @@ export class UserController {
 
   async getUserProjects(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = (req as any).user.userId;
+      console.log("userId", userId);
       const project = await this.projectService.getProjectsByUser(userId);
       res.json(project);
     } catch (error: any) {

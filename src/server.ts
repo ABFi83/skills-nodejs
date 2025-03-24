@@ -3,8 +3,10 @@ import bodyParser from "body-parser";
 import { UserController } from "./controllers/users.controller";
 import { ProjectController } from "./controllers/projects.controller";
 import { SkillController } from "./controllers/skills.controller";
-import { Evaluation } from "./entity/evaluation.entity";
 import { EvaluationController } from "./controllers/evaluations.controller";
+import { authMiddleware } from "./middleware/authMiddleware"; // Importa il middleware
+import { TokenController } from "./controllers/token.controller";
+import { InitController } from "./controllers/init.controller";
 
 const app: Application = express();
 const cors = require("cors");
@@ -13,36 +15,44 @@ app.use(bodyParser.json());
 
 const userController = new UserController();
 const skillsController = new SkillController();
+const tokenController = new TokenController();
+const initController = new InitController();
 const evaluationController = new EvaluationController();
 const projectController = new ProjectController();
-app.get("/users", (req, res) => userController.getAllUsers(req, res));
+
+// Aggiungi il middleware di autenticazione su rotte che richiedono l'autenticazione
+app.get("/users", authMiddleware, (req, res) =>
+  userController.getAllUsers(req, res)
+);
 app.post("/users", (req, res) => userController.createUser(req, res));
 
-app.get("/users", (req, res) => userController.getAllUsers(req, res));
+app.get("/users/:id", authMiddleware, (req, res) =>
+  userController.getUserDetail(req, res)
+);
 
-// Crea un nuovo utente
-app.post("/users", (req, res) => userController.createUser(req, res));
-
-// Ottieni il dettaglio di un utente per ID
-app.get("/users/:id", (req, res) => userController.getUserDetail(req, res));
-
-// Ottieni i progetti di un utente
-app.get("/users/:id/projects", (req, res) =>
+app.get("/projects", authMiddleware, (req, res) =>
   userController.getUserProjects(req, res)
 );
 
-app.post("/project", (req, res) => projectController.createProject(req, res));
-app.delete("/project/:id", (req, res) =>
+app.post("/projects", authMiddleware, (req, res) =>
+  projectController.createProject(req, res)
+);
+app.delete("/projects/:id", authMiddleware, (req, res) =>
   projectController.deleteProject(req, res)
 );
-app.get("/project/:id", (req, res) =>
+app.get("/projects/:id", authMiddleware, (req, res) =>
   projectController.getProjectsDetails(req, res)
 );
 
 app.get("/skills", (req, res) => skillsController.getAllSkills(req, res));
+
 app.get("/evaluation", (req, res) =>
   evaluationController.getAllEvaluations(req, res)
 );
+
+app.get("/token", (req, res) => tokenController.createToken(req, res));
+app.post("/init", (req, res) => initController.init(req, res));
+
 const port = 3001;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
