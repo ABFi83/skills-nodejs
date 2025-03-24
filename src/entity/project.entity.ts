@@ -8,9 +8,9 @@ import {
   ManyToOne,
   OneToMany,
 } from "typeorm";
-import { User } from "./user.entity";
+
 import { Skill } from "./skill.entity";
-import e from "express";
+import { UserProject } from "./userproject.entity";
 @Entity()
 export class Project {
   @PrimaryGeneratedColumn("increment")
@@ -19,8 +19,8 @@ export class Project {
   @Column()
   name: string = "";
 
-  @ManyToMany(() => User, (user) => user.projects)
-  users: User[] | undefined;
+  @OneToMany(() => UserProject, (userProject) => userProject.project)
+  userProjects!: UserProject[];
 
   @ManyToMany(() => Skill, (skill) => skill.projects)
   @JoinTable()

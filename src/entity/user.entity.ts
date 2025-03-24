@@ -4,8 +4,10 @@ import {
   Column,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from "typeorm";
-import { Project } from "./project.entity";
+
+import { UserProject } from "./userproject.entity";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -20,9 +22,8 @@ export class User {
   @Column()
   username: string;
 
-  @ManyToMany(() => Project, (project) => project.users)
-  @JoinTable()
-  projects: Project[] | undefined;
+  @OneToMany(() => UserProject, (userProject) => userProject.user)
+  userProjects?: UserProject[];
 
   constructor(username: string, surname: string, name?: string) {
     this.username = username;

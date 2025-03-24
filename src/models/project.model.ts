@@ -1,25 +1,31 @@
 export interface ProjectResponse {
-  id: string;
+  id: number;
   projectName: string;
-  ratingAverage: number;
-  //role: string;
   evaluations?: EvaluationResponse[];
   labelEvaluations?: LabelResponse[];
+  role?: RoleRosponse;
 }
 export interface LabelResponse {
-  id: string;
+  id: number;
   label: string;
   shortLabel: string;
 }
 
+export interface RoleRosponse {
+  id: number;
+  code: string;
+  name: string;
+}
+
 export interface ValueResponse {
-  id: string;
+  id: number;
   skill: string;
   value: number;
 }
 
 export interface EvaluationResponse {
-  id: string;
-  label: string; //01/01/2024
+  id: number;
+  label: string;
+  ratingAverage: number;
   values: ValueResponse[];
 }
