@@ -31,6 +31,12 @@ export class ProjectService {
     this.roleRepository = AppDataSource.getRepository(Role);
   }
 
+  async getAllProject(): Promise<Project[]> {
+    return this.projectRepository.find({
+      relations: ["userProjects", "userProjects.user"], // Esegui il join con UserProject e User
+    });
+  }
+
   async getProjectsByUser(userId: number): Promise<ProjectResponse[]> {
     try {
       const user = await this.userRepository.findOne({
@@ -47,7 +53,9 @@ export class ProjectService {
       if (!user || !user.userProjects) {
         throw new Error("L'utente non esiste o non ha progetti associati.");
       }
+
       const projects = user.userProjects;
+      console.log(projects);
       const projectResponses = await Promise.all(
         projects.map(async (userProject: UserProject) => {
           let lastEva: Evaluation | null =

@@ -46,6 +46,10 @@ app.get("/projects", authMiddleware, (req, res) =>
   projectController.getUserProjects(req, res)
 );
 
+app.get("/projects/all", authMiddleware, (req, res) =>
+  projectController.getAllProject(req, res)
+);
+
 app.post("/projects", authMiddleware, (req, res) =>
   projectController.createProject(req, res)
 );

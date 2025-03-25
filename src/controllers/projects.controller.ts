@@ -52,4 +52,13 @@ export class ProjectController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async getAllProject(req: Request, res: Response): Promise<void> {
+    try {
+      const project = await this.projectService.getAllProject();
+      res.json(project);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }

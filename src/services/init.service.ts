@@ -28,7 +28,7 @@ export class InitService {
     this.userProjectRepository = AppDataSource.getRepository(UserProject);
     this.roleRepository = AppDataSource.getRepository(Role);
   }
-  async createProject(): Promise<number> {
+  async createProject(): Promise<number[]> {
     try {
       let newProject: Project = this.projectRepository.create();
 
@@ -230,7 +230,45 @@ export class InitService {
       });
       await this.valueRepository.save(valueOldSn2);
 
-      return newProject.id;
+      //progetto 2 legato ad user1
+      let newProject2: Project = this.projectRepository.create();
+      newProject2.name = "Secondo progetto";
+      newProject2.skills = [skill1, skill2, skill4];
+      newProject2 = await this.projectRepository.save(newProject2);
+
+      const userProject3 = new UserProject();
+      userProject3.user = user;
+      userProject3.project = newProject2;
+      userProject3.role = role;
+      await this.userProjectRepository.save(userProject3);
+
+      let evaluationNP2 = this.evaluationRepository.create({
+        evaluationDate: new Date(),
+        user: user,
+        project: newProject2,
+      });
+      evaluationNP2 = await this.evaluationRepository.save(evaluationNP2);
+
+      let valueNP2 = this.valueRepository.create({
+        skill: skill1,
+        value: 10,
+        evaluation: evaluationNP2,
+      });
+      await this.valueRepository.save(valueNP2);
+      let value1NP2 = this.valueRepository.create({
+        skill: skill2,
+        value: 5,
+        evaluation: evaluationNP2,
+      });
+      await this.valueRepository.save(value1NP2);
+      let value4NP2 = this.valueRepository.create({
+        skill: skill4,
+        value: 8,
+        evaluation: evaluationNP2,
+      });
+      await this.valueRepository.save(value4NP2);
+
+      return [newProject.id, newProject2.id];
     } catch (error) {
       console.error("Errore durante l'aggiornamento del progetto:", error);
       throw new Error("Non è stato possibile aggiornare il progetto.");
