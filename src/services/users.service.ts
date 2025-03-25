@@ -1,7 +1,7 @@
 import { Repository } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { User } from "../entity/user.entity";
-
+import bcrypt from "bcrypt";
 export class UserService {
   private userRepository: Repository<User>;
 
@@ -22,6 +22,11 @@ export class UserService {
   // Crea un nuovo utente
   async createUser(user: User): Promise<User> {
     try {
+      console.log(user.password);
+      const saltRounds = 10; // Numero di sali per l'hashing
+      const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+      user.password = hashedPassword;
+      console.log(user.password);
       return await this.userRepository.save(user); // Salva l'utente nel database
     } catch (error) {
       console.error("Errore durante la creazione dell'utente:", error);
@@ -39,13 +44,10 @@ export class UserService {
     }
   }
 
-  async getUsernamePassword(
-    username: string,
-    passwrod: string
-  ): Promise<User | null> {
+  async getUsernamePassword(username: string): Promise<User | null> {
     try {
       return await this.userRepository.findOne({
-        where: { username: username, password: passwrod },
+        where: { username: username },
       });
     } catch (error) {
       console.error("Errore durante il recupero dell'utente:", error);

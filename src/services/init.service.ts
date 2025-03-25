@@ -31,6 +31,7 @@ export class InitService {
   async createProject(): Promise<number> {
     try {
       let newProject: Project = this.projectRepository.create();
+
       const user = await this.userRepository.findOne({
         where: { id: 1 },
         relations: ["userProjects"],
@@ -38,8 +39,16 @@ export class InitService {
       if (!user) {
         throw new Error("Utente non trovato!");
       }
-      newProject.name = "Test";
 
+      const user1 = await this.userRepository.findOne({
+        where: { id: 2 },
+        relations: ["userProjects"],
+      });
+      if (!user1) {
+        throw new Error("Utente non trovato!");
+      }
+
+      newProject.name = "Test";
       let skill1 = await this.skillRepository.findOne({
         where: { name: "JavaScript" },
       });
@@ -87,12 +96,28 @@ export class InitService {
         role = await this.roleRepository.save(role);
       }
 
+      let role1 = await this.roleRepository.findOne({
+        where: { name: "Developer" },
+      });
+      if (!role1) {
+        role1 = this.roleRepository.create({
+          code: "DV",
+          name: "Developer",
+        });
+        role1 = await this.roleRepository.save(role1);
+      }
+
       const userProject = new UserProject();
       userProject.user = user;
       userProject.project = newProject;
       userProject.role = role;
-
       await this.userProjectRepository.save(userProject);
+
+      const userProject1 = new UserProject();
+      userProject1.user = user1;
+      userProject1.project = newProject;
+      userProject1.role = role1;
+      await this.userProjectRepository.save(userProject1);
 
       let evaluation = this.evaluationRepository.create({
         evaluationDate: new Date(),
@@ -149,6 +174,62 @@ export class InitService {
         evaluation: evaluationOld,
       });
       await this.valueRepository.save(valueOld2);
+
+      let evaluation1 = this.evaluationRepository.create({
+        evaluationDate: new Date(),
+        user: user1,
+        project: newProject,
+      });
+      evaluation1 = await this.evaluationRepository.save(evaluation1);
+
+      let valueSn = this.valueRepository.create({
+        skill: skill1,
+        value: 2,
+        evaluation: evaluation1,
+      });
+      await this.valueRepository.save(valueSn);
+      let valueSn1 = this.valueRepository.create({
+        skill: skill2,
+        value: 3,
+        evaluation: evaluation1,
+      });
+      await this.valueRepository.save(valueSn1);
+      let valueSn4 = this.valueRepository.create({
+        skill: skill4,
+        value: 4,
+        evaluation: evaluation1,
+      });
+      await this.valueRepository.save(valueSn4);
+
+      yestarday.setDate(yestarday.getDate() - 1);
+      let evaluationOldSn = this.evaluationRepository.create({
+        evaluationDate: yestarday,
+        user: user1,
+        project: newProject,
+      });
+      evaluationOldSn = await this.evaluationRepository.save(evaluationOldSn);
+
+      let valueOldSn = this.valueRepository.create({
+        skill: skill1,
+        value: 7,
+        evaluation: evaluationOldSn,
+      });
+      await this.valueRepository.save(valueOldSn);
+      let valueOldSn1 = this.valueRepository.create({
+        skill: skill2,
+        value: 9,
+        evaluation: evaluationOldSn,
+      });
+      await this.valueRepository.save(valueOldSn1);
+
+      await this.valueRepository.save(valueOld);
+      let valueOldSn2 = this.valueRepository.create({
+        skill: skill4,
+        value: 2,
+        evaluation: evaluationOldSn,
+      });
+      await this.valueRepository.save(valueOldSn2);
+
       return newProject.id;
     } catch (error) {
       console.error("Errore durante l'aggiornamento del progetto:", error);

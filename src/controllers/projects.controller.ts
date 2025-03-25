@@ -32,7 +32,11 @@ export class ProjectController {
   async getProjectsDetails(req: Request, res: Response): Promise<void> {
     try {
       const projectId = parseInt(req.params.id);
-      const project = await this.projectService.getProjectsDetail(projectId);
+      const userId = (req as any).user.userId;
+      const project = await this.projectService.getProjectsDetail(
+        projectId,
+        userId
+      );
       res.json(project);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

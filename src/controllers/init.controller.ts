@@ -13,8 +13,22 @@ export class InitController {
   }
 
   async init(req: Request, res: Response): Promise<void> {
-    const user: User = req.body as User;
-    const createdUser = await this.userService.createUser(user);
+    const user1: User = {
+      name: "test",
+      surname: "prova",
+      username: "zoro",
+      password: "zoro",
+      id: 1,
+    };
+    const createdUser = await this.userService.createUser(user1);
+    const user2: User = {
+      name: "sanji",
+      surname: "sanji",
+      username: "sanji",
+      password: "sanji",
+      id: 2,
+    };
+    const createdUser2 = await this.userService.createUser(user2);
     let number = await this.initService.createProject();
     res.status(200).json(number);
   }

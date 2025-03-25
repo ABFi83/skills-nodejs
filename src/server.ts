@@ -26,11 +26,13 @@ app.get("/users", authMiddleware, (req, res) =>
 );
 app.post("/users", (req, res) => userController.createUser(req, res));
 
-app.get("/user", authMiddleware, (req, res) =>
-  userController.getUser(req, res)
-);
-
-app.post("/users/login", (req, res) => userController.login(req, res));
+app.post("/users/login", async (req, res) => {
+  try {
+    await userController.login(req, res); // Ensure async handling of the route
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 app.get("/users/:id", authMiddleware, (req, res) =>
   userController.getUserDetail(req, res)

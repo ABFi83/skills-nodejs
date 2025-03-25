@@ -44,12 +44,15 @@ export class ProjectService {
           "userProjects.role",
         ],
       });
-
+      console.log("US1 " + userId);
       if (!user || !user.userProjects) {
         throw new Error("L'utente non esiste o non ha progetti associati.");
       }
 
+      console.log("PN1 " + user.userProjects[0].project.name);
+
       const projects = user.userProjects;
+
       const projectResponses = await Promise.all(
         projects.map(async (userProject: UserProject) => {
           let lastEva: Evaluation | null =
@@ -165,7 +168,10 @@ export class ProjectService {
     return parseFloat(media.toFixed(1));
   }
 
-  async getProjectsDetail(projectId: number): Promise<ProjectResponse> {
+  async getProjectsDetail(
+    projectId: number,
+    userId: number
+  ): Promise<ProjectResponse> {
     try {
       const project = await this.projectRepository.findOne({
         where: { id: projectId },
@@ -174,6 +180,7 @@ export class ProjectService {
           "userProjects.role",
           "skills",
           "evaluation",
+          "evaluation.user",
           "evaluation.values",
           "evaluation.values.skill",
         ],
@@ -181,10 +188,11 @@ export class ProjectService {
       if (!project) {
         throw new Error("Progetto non trovato.");
       }
-      project.evaluation =
-        project.evaluation?.sort(
-          (a, b) => b.evaluationDate.getTime() - a.evaluationDate.getTime()
-        ) || [];
+      console.log(project.evaluation);
+      project.evaluation = (
+        project.evaluation?.filter((e) => e.user.id === userId) || []
+      ).sort((a, b) => b.evaluationDate.getTime() - a.evaluationDate.getTime());
+
       project.skills = project.skills?.sort((a, b) => b.id - a.id) || [];
 
       let response: ProjectResponse = {

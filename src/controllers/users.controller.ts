@@ -3,6 +3,7 @@ import { UserService } from "../services/users.service";
 import { ProjectService } from "../services/project.service";
 import { User } from "../entity/user.entity";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 export class UserController {
   private userService: UserService;
 
@@ -10,28 +11,33 @@ export class UserController {
     this.userService = new UserService();
   }
 
-  async login(req: Request, res: Response): Promise<void> {
+  async login(req: Request, res: Response): Promise<Response> {
     try {
-      const secretKey = "YOUR_SECRET_KEY"; // La tua chiave segreta
-      const { username, password } = req.body;
+      const secretKey = "YOUR_SECRET_KEY"; // Your secret key
+      const { username, password } = req.body; // Password sent by client
 
-      const user = await this.userService.getUsernamePassword(
-        username,
-        password
-      );
+      // Get user from DB
+      const user = await this.userService.getUsernamePassword(username);
       if (!user) {
-        res.status(401).json({ error: "Credenziali non valide" });
-        return;
+        return res.status(401).json({ error: "Invalid credentials" });
       }
-      const payload = {
-        userId: user.id,
-        username: user.username,
-      };
-      const token = jwt.sign(payload, secretKey, { expiresIn: "1h" }); // Genera il token
-      console.log("Generated Token:", token);
-      res.json({ token });
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      console.log(isMatch);
+
+      if (!isMatch) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // If password is correct, generate JWT
+      const payload = { userId: user.id, username: user.username };
+      const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+
+      // Send the token to the user
+      return res.json({ token });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      console.error(error);
+      return res.status(500).json({ error: error.message });
     }
   }
 
