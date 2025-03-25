@@ -14,8 +14,8 @@ export class InitController {
 
   async init(req: Request, res: Response): Promise<void> {
     const user1: User = {
-      name: "test",
-      surname: "prova",
+      name: "zoro",
+      surname: "zoro",
       username: "zoro",
       password: "zoro",
       id: 1,

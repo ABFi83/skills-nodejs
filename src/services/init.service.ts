@@ -8,6 +8,7 @@ import { UserProject } from "../entity/userproject.entity";
 import { Value } from "../entity/values.entity";
 import { EvaluationService } from "./evaluation.service";
 import { AppDataSource } from "../database/database";
+import { Client } from "../entity/client.entity";
 
 export class InitService {
   private projectRepository: Repository<Project>;
@@ -17,10 +18,11 @@ export class InitService {
   private valueRepository: Repository<Value>;
   private userProjectRepository: Repository<UserProject>;
   private roleRepository: Repository<Role>;
+  private clientRepository: Repository<Client>;
 
   constructor() {
     this.projectRepository = AppDataSource.getRepository(Project); // Ottieni il repository per Project
-
+    this.clientRepository = AppDataSource.getRepository(Client);
     this.skillRepository = AppDataSource.getRepository(Skill);
     this.userRepository = AppDataSource.getRepository(User);
     this.evaluationRepository = AppDataSource.getRepository(Evaluation);
@@ -48,7 +50,32 @@ export class InitService {
         throw new Error("Utente non trovato!");
       }
 
+      let client = await this.clientRepository.findOne({
+        where: { code: "ALL" },
+      });
+      if (!client) {
+        client = this.clientRepository.create({
+          name: "Allitude",
+          code: "ALL",
+          file: "ALL.jpg",
+        });
+        client = await this.clientRepository.save(client);
+      }
+
+      let client2 = await this.clientRepository.findOne({
+        where: { code: "INT" },
+      });
+      if (!client2) {
+        client2 = this.clientRepository.create({
+          name: "Intesa San Paolo",
+          code: "INT",
+          file: "INT.jpg",
+        });
+        client2 = await this.clientRepository.save(client2);
+      }
       newProject.name = "Test";
+      newProject.client = client;
+      newProject.description = "Avanti ad oltranza";
       let skill1 = await this.skillRepository.findOne({
         where: { name: "JavaScript" },
       });
@@ -232,7 +259,9 @@ export class InitService {
 
       //progetto 2 legato ad user1
       let newProject2: Project = this.projectRepository.create();
+      newProject2.client = client2;
       newProject2.name = "Secondo progetto";
+      newProject2.description = "Progetto bello bellissimo";
       newProject2.skills = [skill1, skill2, skill4];
       newProject2 = await this.projectRepository.save(newProject2);
 

@@ -11,6 +11,7 @@ import {
 
 import { Skill } from "./skill.entity";
 import { UserProject } from "./userproject.entity";
+import { Client } from "./client.entity";
 @Entity()
 export class Project {
   @PrimaryGeneratedColumn("increment")
@@ -18,9 +19,14 @@ export class Project {
 
   @Column()
   name: string = "";
+  @Column()
+  description: string = "";
 
   @OneToMany(() => UserProject, (userProject) => userProject.project)
   userProjects!: UserProject[];
+
+  @ManyToOne(() => Client, (client) => client.project)
+  client!: Client;
 
   @ManyToMany(() => Skill, (skill) => skill.projects)
   @JoinTable()

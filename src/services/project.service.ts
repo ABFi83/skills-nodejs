@@ -33,7 +33,7 @@ export class ProjectService {
 
   async getAllProject(): Promise<Project[]> {
     return this.projectRepository.find({
-      relations: ["userProjects", "userProjects.user"], // Esegui il join con UserProject e User
+      relations: ["userProjects", "userProjects.user", "client"], // Esegui il join con UserProject e User
     });
   }
 
@@ -55,7 +55,7 @@ export class ProjectService {
       }
 
       const projects = user.userProjects;
-      console.log(projects);
+
       const projectResponses = await Promise.all(
         projects.map(async (userProject: UserProject) => {
           let lastEva: Evaluation | null =
@@ -72,6 +72,9 @@ export class ProjectService {
               code: userProject.role.code,
               name: userProject.role.name,
             },
+            description: userProject.project.description,
+            users: [],
+
             labelEvaluations: userProject.project.skills
               ? userProject.project.skills.map((skill: Skill) => {
                   let label = {
@@ -181,20 +184,26 @@ export class ProjectService {
         relations: [
           "userProjects",
           "userProjects.role",
+          "userProjects.user",
           "skills",
           "evaluation",
           "evaluation.user",
           "evaluation.values",
           "evaluation.values.skill",
+          "client",
         ],
       });
       if (!project) {
         throw new Error("Progetto non trovato.");
       }
-
+      console.log(project.client);
       project.evaluation = (
         project.evaluation?.filter((e) => e.user.id === userId) || []
       ).sort((a, b) => b.evaluationDate.getTime() - a.evaluationDate.getTime());
+
+      const userRole = project.userProjects?.find(
+        (e) => e.user.id === userId
+      )?.role;
 
       project.skills = project.skills?.sort((a, b) => b.id - a.id) || [];
 
@@ -202,10 +211,27 @@ export class ProjectService {
         id: project.id,
         projectName: project.name,
         role: {
-          id: project.userProjects[0].role.id,
-          code: project.userProjects[0].role.code,
-          name: project.userProjects[0].role.name,
+          id: userRole ? userRole.id : 0,
+          code: userRole ? userRole.code : "",
+          name: userRole ? userRole.name : "",
         },
+        description: project.description,
+        users: project.userProjects
+          ? project.userProjects.map((userProject: UserProject) => {
+              let user = {
+                id: userProject.user.id,
+                username: userProject.user.username,
+                name: userProject.user.name,
+                surname: userProject.user.surname,
+                role: {
+                  id: userProject.role.id,
+                  code: userProject.role.code,
+                  name: userProject.role.name,
+                },
+              };
+              return user;
+            })
+          : [],
         labelEvaluations: project.skills
           ? project.skills.map((skill: Skill) => {
               let label = {
@@ -235,6 +261,12 @@ export class ProjectService {
               : [],
           };
         }),
+        client: {
+          id: project.client.id,
+          code: project.client.code,
+          name: project.client.name,
+          logo: project.client.file,
+        },
       };
       return response;
     } catch (error) {

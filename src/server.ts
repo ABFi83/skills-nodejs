@@ -8,17 +8,21 @@ import { authMiddleware } from "./middleware/authMiddleware"; // Importa il midd
 import { TokenController } from "./controllers/token.controller";
 import { InitController } from "./controllers/init.controller";
 
+import { ClientController } from "./controllers/client.controller";
+
 const app: Application = express();
 const cors = require("cors");
 app.use(cors());
 app.use(bodyParser.json());
 
+const path = require("path");
 const userController = new UserController();
 const skillsController = new SkillController();
 const tokenController = new TokenController();
 const initController = new InitController();
 const evaluationController = new EvaluationController();
 const projectController = new ProjectController();
+const clientController = new ClientController();
 
 // Aggiungi il middleware di autenticazione su rotte che richiedono l'autenticazione
 app.get("/users", authMiddleware, (req, res) =>
@@ -68,6 +72,21 @@ app.get("/evaluation", (req, res) =>
 
 app.get("/token", (req, res) => tokenController.createToken(req, res));
 app.post("/init", (req, res) => initController.init(req, res));
+app.get("/client", (req, res) => clientController.getAllClients(req, res));
+app.use(
+  "/uploads/clients",
+  express.static(path.join(__dirname, "uploads/clients"))
+);
+app.get("/client/:clientId/logo", (req, res) => {
+  const { clientId } = req.params;
+  const imagePath = path.join(__dirname, "uploads/clients", `${clientId}.jpg`);
+
+  res.sendFile(imagePath, (err) => {
+    if (err) {
+      res.status(404).json({ error: "Logo non trovato" });
+    }
+  });
+});
 
 const port = 3001;
 app.listen(port, () => {

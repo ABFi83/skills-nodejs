@@ -6,13 +6,23 @@ import { Skill } from "../entity/skill.entity";
 import { Value } from "../entity/values.entity";
 import { UserProject } from "../entity/userproject.entity";
 import { Role } from "../entity/role.entity";
+import { Client } from "../entity/client.entity";
 
 export const AppDataSource = new DataSource({
   type: "sqlite",
   database: "./mydb.db",
   synchronize: true,
   logging: false,
-  entities: [User, Project, Skill, Evaluation, Value, UserProject, Role],
+  entities: [
+    User,
+    Project,
+    Skill,
+    Evaluation,
+    Value,
+    UserProject,
+    Role,
+    Client,
+  ],
   migrations: [],
   subscribers: [],
 });

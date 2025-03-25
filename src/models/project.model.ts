@@ -1,9 +1,20 @@
+import { UserResponse } from "./user.model";
+
 export interface ProjectResponse {
   id: number;
   projectName: string;
+  description: string;
   evaluations?: EvaluationResponse[];
   labelEvaluations?: LabelResponse[];
-  role?: RoleRosponse;
+  role?: RoleResponse;
+  users: UserResponse[];
+  client?: ClientResponse;
+}
+export interface ClientResponse {
+  id: number;
+  code: string;
+  name: string;
+  logo: string;
 }
 export interface LabelResponse {
   id: number;
@@ -11,7 +22,7 @@ export interface LabelResponse {
   shortLabel: string;
 }
 
-export interface RoleRosponse {
+export interface RoleResponse {
   id: number;
   code: string;
   name: string;
