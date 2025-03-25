@@ -16,24 +16,19 @@ export class UserController {
       const secretKey = "YOUR_SECRET_KEY"; // Your secret key
       const { username, password } = req.body; // Password sent by client
 
-      // Get user from DB
       const user = await this.userService.getUsernamePassword(username);
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
-      console.log(isMatch);
-
       if (!isMatch) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      // If password is correct, generate JWT
       const payload = { userId: user.id, username: user.username };
       const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
 
-      // Send the token to the user
       return res.json({ token });
     } catch (error: any) {
       console.error(error);

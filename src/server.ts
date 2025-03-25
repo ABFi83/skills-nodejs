@@ -24,6 +24,10 @@ const projectController = new ProjectController();
 app.get("/users", authMiddleware, (req, res) =>
   userController.getAllUsers(req, res)
 );
+
+app.get("/user", authMiddleware, (req, res) =>
+  userController.getUser(req, res)
+);
 app.post("/users", (req, res) => userController.createUser(req, res));
 
 app.post("/users/login", async (req, res) => {
