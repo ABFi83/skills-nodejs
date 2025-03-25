@@ -39,6 +39,20 @@ export class UserService {
     }
   }
 
+  async getUsernamePassword(
+    username: string,
+    passwrod: string
+  ): Promise<User | null> {
+    try {
+      return await this.userRepository.findOne({
+        where: { username: username, password: passwrod },
+      });
+    } catch (error) {
+      console.error("Errore durante il recupero dell'utente:", error);
+      throw new Error("Non è stato possibile recuperare l'utente.");
+    }
+  }
+
   // Metodo per eliminare un utente
   async deleteUser(id: number): Promise<void> {
     try {

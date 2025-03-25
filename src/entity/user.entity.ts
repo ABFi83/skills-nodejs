@@ -20,16 +20,11 @@ export class User {
   surname?: string;
 
   @Column()
-  username: string;
+  username!: string;
+
+  @Column()
+  password!: string;
 
   @OneToMany(() => UserProject, (userProject) => userProject.user)
   userProjects?: UserProject[];
-
-  constructor(username: string, surname: string, name?: string) {
-    this.username = username;
-    this.surname = surname;
-    if (name) {
-      this.name = name;
-    }
-  }
 }

@@ -38,4 +38,14 @@ export class ProjectController {
       res.status(500).json({ error: error.message });
     }
   }
+
+  async getUserProjects(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user.userId;
+      const project = await this.projectService.getProjectsByUser(userId);
+      res.json(project);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }

@@ -2,13 +2,37 @@ import { Request, Response } from "express";
 import { UserService } from "../services/users.service";
 import { ProjectService } from "../services/project.service";
 import { User } from "../entity/user.entity";
-
+import jwt from "jsonwebtoken";
 export class UserController {
   private userService: UserService;
-  private projectService: ProjectService;
+
   constructor() {
     this.userService = new UserService();
-    this.projectService = new ProjectService();
+  }
+
+  async login(req: Request, res: Response): Promise<void> {
+    try {
+      const secretKey = "YOUR_SECRET_KEY"; // La tua chiave segreta
+      const { username, password } = req.body;
+
+      const user = await this.userService.getUsernamePassword(
+        username,
+        password
+      );
+      if (!user) {
+        res.status(401).json({ error: "Credenziali non valide" });
+        return;
+      }
+      const payload = {
+        userId: user.id,
+        username: user.username,
+      };
+      const token = jwt.sign(payload, secretKey, { expiresIn: "1h" }); // Genera il token
+      console.log("Generated Token:", token);
+      res.json({ token });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   }
 
   async getAllUsers(req: Request, res: Response): Promise<void> {
@@ -17,6 +41,20 @@ export class UserController {
       res.json(users);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getUser(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user.userId;
+      const user = await this.userService.getUserById(userId);
+      if (!user) {
+        res.status(404).json({ message: "Utente non trovato" });
+        return;
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: error });
     }
   }
 
@@ -34,28 +72,13 @@ export class UserController {
     try {
       const userId = parseInt(req.params.id);
       const user = await this.userService.getUserById(userId);
-
       if (!user) {
         res.status(404).json({ message: "Utente non trovato" });
         return;
       }
-
       res.json(user);
     } catch (error) {
       res.status(500).json({ message: error });
     }
   }
-
-  async getUserProjects(req: Request, res: Response): Promise<void> {
-    try {
-      const userId = (req as any).user.userId;
-      console.log("userId", userId);
-      const project = await this.projectService.getProjectsByUser(userId);
-      res.json(project);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-
-  // Aggiungi altri metodi del controller
 }

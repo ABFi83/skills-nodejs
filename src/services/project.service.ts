@@ -7,7 +7,6 @@ import { User } from "../entity/user.entity";
 import { EvaluationService } from "./evaluation.service";
 import { Value } from "../entity/values.entity";
 import { Skill } from "../entity/skill.entity";
-import e from "express";
 import { UserProject } from "../entity/userproject.entity";
 import { Role } from "../entity/role.entity";
 
@@ -165,6 +164,7 @@ export class ProjectService {
     const media = somma / valori.length;
     return parseFloat(media.toFixed(1));
   }
+
   async getProjectsDetail(projectId: number): Promise<ProjectResponse> {
     try {
       const project = await this.projectRepository.findOne({

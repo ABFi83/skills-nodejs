@@ -26,12 +26,18 @@ app.get("/users", authMiddleware, (req, res) =>
 );
 app.post("/users", (req, res) => userController.createUser(req, res));
 
+app.get("/user", authMiddleware, (req, res) =>
+  userController.getUser(req, res)
+);
+
+app.post("/users/login", (req, res) => userController.login(req, res));
+
 app.get("/users/:id", authMiddleware, (req, res) =>
   userController.getUserDetail(req, res)
 );
 
 app.get("/projects", authMiddleware, (req, res) =>
-  userController.getUserProjects(req, res)
+  projectController.getUserProjects(req, res)
 );
 
 app.post("/projects", authMiddleware, (req, res) =>
