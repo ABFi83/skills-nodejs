@@ -7,9 +7,7 @@ export class TokenController {
       userId: 2, // User ID
       username: "Prova", // Nome utente
     };
-
     const token = jwt.sign(payload, secretKey, { expiresIn: "1h" }); // Genera un token con scadenza di 1 ora
-    console.log("Generated Token:", token);
     res.json(token);
   }
 }

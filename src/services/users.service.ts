@@ -22,12 +22,10 @@ export class UserService {
   // Crea un nuovo utente
   async createUser(user: User): Promise<User> {
     try {
-      console.log(user.password);
-      const saltRounds = 10; // Numero di sali per l'hashing
+      const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(user.password, saltRounds);
       user.password = hashedPassword;
-      console.log(user.password);
-      return await this.userRepository.save(user); // Salva l'utente nel database
+      return await this.userRepository.save(user);
     } catch (error) {
       console.error("Errore durante la creazione dell'utente:", error);
       throw new Error("Non è stato possibile creare l'utente.");

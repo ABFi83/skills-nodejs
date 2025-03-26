@@ -157,7 +157,6 @@ export class ProjectService {
         where: { id },
       });
       if (project) await this.projectRepository.remove(project);
-      console.log(`Progetto con id ${id} eliminato con successo!`);
     } catch (error) {
       console.error("Errore durante l'eliminazione del progetto:", error);
       throw new Error("Non è stato possibile eliminare il progetto.");
@@ -196,7 +195,6 @@ export class ProjectService {
       if (!project) {
         throw new Error("Progetto non trovato.");
       }
-      console.log(project.client);
       project.evaluation = (
         project.evaluation?.filter((e) => e.user.id === userId) || []
       ).sort((a, b) => b.evaluationDate.getTime() - a.evaluationDate.getTime());
