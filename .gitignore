@@ -35,3 +35,6 @@ test-results/
 *.swo
 *.iml
 *.bak
+
+#DB 
+*.db
