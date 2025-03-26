@@ -70,7 +70,7 @@ app.get("/evaluation", (req, res) =>
   evaluationController.getAllEvaluations(req, res)
 );
 
-app.get("/token", (req, res) => tokenController.createToken(req, res));
+app.post("/token", (req, res) => tokenController.createToken(req, res));
 app.post("/init", (req, res) => initController.init(req, res));
 app.get("/client", (req, res) => clientController.getAllClients(req, res));
 app.use(

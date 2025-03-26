@@ -51,29 +51,29 @@ export class InitService {
       }
 
       let client = await this.clientRepository.findOne({
-        where: { code: "ALL" },
+        where: { code: "LUM" },
       });
       if (!client) {
         client = this.clientRepository.create({
-          name: "Allitude",
-          code: "ALL",
-          file: "ALL.jpg",
+          name: "Lumon",
+          code: "LUM",
+          file: "LUM.jpg",
         });
         client = await this.clientRepository.save(client);
       }
 
       let client2 = await this.clientRepository.findOne({
-        where: { code: "INT" },
+        where: { code: "POH" },
       });
       if (!client2) {
         client2 = this.clientRepository.create({
-          name: "Intesa San Paolo",
-          code: "INT",
-          file: "INT.jpg",
+          name: "Pollo Hermanos",
+          code: "POH",
+          file: "POH.jpg",
         });
         client2 = await this.clientRepository.save(client2);
       }
-      newProject.name = "Test";
+      newProject.name = "Lumon - Scissione";
       newProject.client = client;
       newProject.description = "Avanti ad oltranza";
       let skill1 = await this.skillRepository.findOne({
@@ -260,8 +260,8 @@ export class InitService {
       //progetto 2 legato ad user1
       let newProject2: Project = this.projectRepository.create();
       newProject2.client = client2;
-      newProject2.name = "Secondo progetto";
-      newProject2.description = "Progetto bello bellissimo";
+      newProject2.name = "Pollo Hermanos - Icemberg ";
+      newProject2.description = "Breaking";
       newProject2.skills = [skill1, skill2, skill4];
       newProject2 = await this.projectRepository.save(newProject2);
 
