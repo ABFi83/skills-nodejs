@@ -52,7 +52,7 @@ Content-Type: application/json
 
 {
     "userId": 1,
-    "username": "Test"
+    "username": "Zoro"
 }
 ```
 
