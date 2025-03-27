@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ProjectService } from "../services/project.service";
 import { Project } from "../entity/project.entity";
+import { EvaluationRequest, ValueRequest } from "../models/project.model";
 
 export class ProjectController {
   private projectService: ProjectService;
@@ -48,6 +49,35 @@ export class ProjectController {
       const userId = (req as any).user.userId;
       const project = await this.projectService.getProjectsByUser(userId);
       res.json(project);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async createEvaluation(req: Request, res: Response): Promise<void> {
+    try {
+      const projectId = parseInt(req.params.id);
+      const evaluationRequest: EvaluationRequest =
+        req.body as EvaluationRequest;
+      const project = await this.projectService.createEvaluation(
+        projectId,
+        evaluationRequest
+      );
+      res.json(project);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async saveValue(req: Request, res: Response): Promise<void> {
+    try {
+      const projectId = parseInt(req.params.id);
+      const valueRequest: ValueRequest = req.body as ValueRequest;
+      const evaluation = await this.projectService.saveValue(
+        valueRequest,
+        projectId
+      );
+      res.json(evaluation);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

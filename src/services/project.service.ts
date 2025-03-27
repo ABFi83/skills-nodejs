@@ -2,7 +2,11 @@ import { Evaluation } from "./../entity/evaluation.entity";
 import { FindOptionsWhere, Repository } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { Project } from "../entity/project.entity";
-import { ProjectResponse } from "../models/project.model"; // Supponiamo che ProjectResponse sia un DTO
+import {
+  EvaluationRequest,
+  ProjectResponse,
+  ValueRequest,
+} from "../models/project.model"; // Supponiamo che ProjectResponse sia un DTO
 import { User } from "../entity/user.entity";
 import { EvaluationService } from "./evaluation.service";
 import { Value } from "../entity/values.entity";
@@ -33,7 +37,7 @@ export class ProjectService {
 
   async getAllProject(): Promise<Project[]> {
     return this.projectRepository.find({
-      relations: ["userProjects", "userProjects.user", "client"], // Esegui il join con UserProject e User
+      relations: ["userProjects", "userProjects.user", "client"],
     });
   }
 
@@ -128,6 +132,47 @@ export class ProjectService {
         throw new Error("Progetto non trovato.");
       }
       return project;
+    } catch (error) {
+      console.error("Errore durante il recupero del progetto:", error);
+      throw new Error("Non è stato possibile recuperare il progetto.");
+    }
+  }
+
+  async saveValue(
+    valueRequest: ValueRequest,
+    projectId: number
+  ): Promise<Evaluation | null> {
+    try {
+      const project = await this.projectRepository.findOne({
+        where: { id: projectId },
+      });
+      if (!project) {
+        throw new Error("Progetto non trovato.");
+      }
+      const evaluation = await this.evaluationRepository.findOne({
+        where: { id: valueRequest.evaluationId },
+      });
+      if (!evaluation) {
+        throw new Error("Evaluation non trovato.");
+      }
+      valueRequest.values.forEach(async (v) => {
+        const skill = await this.skillRepository.findOne({
+          where: { id: parseInt(v.skill, 10) },
+        });
+
+        if (skill) {
+          let value = this.valueRepository.create({
+            skill: skill,
+            value: v.value,
+            evaluation: evaluation,
+          });
+          console.log(value);
+          await this.valueRepository.save(value);
+        }
+      });
+      evaluation.endDate = new Date();
+      this.evaluationRepository.save(evaluation);
+      return evaluation;
     } catch (error) {
       console.error("Errore durante il recupero del progetto:", error);
       throw new Error("Non è stato possibile recuperare il progetto.");
@@ -246,6 +291,8 @@ export class ProjectService {
             evaluation.values?.sort((a, b) => b.skill.id - a.skill.id) || [];
           return {
             id: evaluation.id,
+            startDate: evaluation.startDate,
+            endDate: evaluation.endDate,
             label: evaluation.evaluationDate.toLocaleDateString(), //01/01/2024
             ratingAverage: this.calcolaMedia(evaluation.values),
             values: evaluation.values
@@ -274,6 +321,36 @@ export class ProjectService {
         error
       );
       throw new Error("Non è stato possibile recuperare i progetti.");
+    }
+  }
+
+  async createEvaluation(
+    projectId: number,
+    evaluationRequest: EvaluationRequest
+  ): Promise<Project> {
+    try {
+      const project = await this.projectRepository.findOne({
+        where: { id: projectId },
+        relations: ["userProjects", "userProjects.user", "client"],
+      });
+
+      if (!project) throw new Error("Progetto non trovato.");
+
+      project?.userProjects.forEach(async (userProject: UserProject) => {
+        let evaluation = this.evaluationRepository.create({
+          startDate: evaluationRequest.startDate,
+          endDate: evaluationRequest.endDate,
+          evaluationDate: evaluationRequest.evaluationDate,
+          user: userProject.user,
+          project: project,
+        });
+        evaluation = await this.evaluationRepository.save(evaluation);
+      });
+
+      return project;
+    } catch (error) {
+      console.error("Errore durante il recupero del progetto:", error);
+      throw new Error("Non è stato possibile recuperare il progetto.");
     }
   }
 }

@@ -63,6 +63,12 @@ app.delete("/projects/:id", authMiddleware, (req, res) =>
 app.get("/projects/:id", authMiddleware, (req, res) =>
   projectController.getProjectsDetails(req, res)
 );
+app.post("/projects/:id/evaluation", authMiddleware, (req, res) =>
+  projectController.createEvaluation(req, res)
+);
+app.put("/projects/:id/values", authMiddleware, (req, res) =>
+  projectController.saveValue(req, res)
+);
 
 app.get("/skills", (req, res) => skillsController.getAllSkills(req, res));
 

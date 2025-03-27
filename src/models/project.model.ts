@@ -1,4 +1,5 @@
 import { UserResponse } from "./user.model";
+import { Evaluation } from "../entity/evaluation.entity";
 
 export interface ProjectResponse {
   id: number;
@@ -38,5 +39,18 @@ export interface EvaluationResponse {
   id: number;
   label: string;
   ratingAverage: number;
+  startDate?: Date;
+  endDate?: Date;
+  values: ValueResponse[];
+}
+
+export interface EvaluationRequest {
+  startDate: Date;
+  endDate: Date;
+  evaluationDate: Date;
+}
+export interface ValueRequest {
+  evaluationId?: number;
+
   values: ValueResponse[];
 }

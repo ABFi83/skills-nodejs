@@ -6,10 +6,10 @@ import {
   CreateDateColumn,
   OneToMany,
   JoinTable,
+  Unique,
 } from "typeorm";
 import { User } from "./user.entity";
 import { Project } from "./project.entity";
-import { Skill } from "./skill.entity";
 import { Value } from "./values.entity";
 
 @Entity()
@@ -19,11 +19,20 @@ export class Evaluation {
 
   @ManyToOne(() => User, { nullable: false })
   @JoinTable()
-  user: User;
+  user!: User;
+
+  @CreateDateColumn()
+  startDate?: Date;
+
+  @CreateDateColumn()
+  endDate?: Date;
+
+  @CreateDateColumn()
+  evaluationDate!: Date; // Data della valutazione con vincolo di unicità
 
   @ManyToOne(() => Project, { nullable: false, onDelete: "CASCADE" })
   @JoinTable()
-  project: Project;
+  project!: Project;
 
   @OneToMany(() => Value, (value) => value.evaluation, {
     cascade: true,
@@ -31,13 +40,4 @@ export class Evaluation {
   })
   @JoinTable()
   values?: Value[];
-
-  @CreateDateColumn()
-  evaluationDate: Date; // Data della valutazione
-
-  constructor(user: User, project: Project) {
-    this.user = user;
-    this.project = project;
-    this.evaluationDate = new Date();
-  }
 }
