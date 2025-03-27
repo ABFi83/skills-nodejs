@@ -221,6 +221,7 @@ export class ProjectService {
                 username: userProject.user.username,
                 name: userProject.user.name,
                 surname: userProject.user.surname,
+                code: userProject.user.code,
                 role: {
                   id: userProject.role.id,
                   code: userProject.role.code,

@@ -18,17 +18,19 @@ export class InitController {
       surname: "zoro",
       username: "zoro",
       password: "zoro",
+      code: "ZRO",
       id: 1,
     };
-    const createdUser = await this.userService.createUser(user1);
+    await this.userService.createUser(user1);
     const user2: User = {
       name: "sanji",
       surname: "sanji",
       username: "sanji",
       password: "sanji",
+      code: "SNJ",
       id: 2,
     };
-    const createdUser2 = await this.userService.createUser(user2);
+    await this.userService.createUser(user2);
     let number = await this.initService.createProject();
     res.status(200).json(number);
   }

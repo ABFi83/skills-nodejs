@@ -25,6 +25,9 @@ export class User {
   @Column()
   password!: string;
 
+  @Column()
+  code!: string;
+
   @OneToMany(() => UserProject, (userProject) => userProject.user)
   userProjects?: UserProject[];
 }
