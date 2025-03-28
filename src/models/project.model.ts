@@ -41,6 +41,7 @@ export interface EvaluationResponse {
   ratingAverage: number;
   startDate?: Date;
   endDate?: Date;
+  close?: boolean;
   values: ValueResponse[];
 }
 

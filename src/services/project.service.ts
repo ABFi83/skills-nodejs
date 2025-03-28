@@ -155,6 +155,7 @@ export class ProjectService {
       if (!evaluation) {
         throw new Error("Evaluation non trovato.");
       }
+      evaluation.close = true;
       valueRequest.values.forEach(async (v) => {
         const skill = await this.skillRepository.findOne({
           where: { id: parseInt(v.skill, 10) },
@@ -170,7 +171,6 @@ export class ProjectService {
           await this.valueRepository.save(value);
         }
       });
-      evaluation.endDate = new Date();
       this.evaluationRepository.save(evaluation);
       return evaluation;
     } catch (error) {
@@ -295,6 +295,7 @@ export class ProjectService {
             endDate: evaluation.endDate,
             label: evaluation.evaluationDate.toLocaleDateString(), //01/01/2024
             ratingAverage: this.calcolaMedia(evaluation.values),
+            close: evaluation.close,
             values: evaluation.values
               ? evaluation.values.map((value: Value) => {
                   let v = {
@@ -343,10 +344,10 @@ export class ProjectService {
           evaluationDate: evaluationRequest.evaluationDate,
           user: userProject.user,
           project: project,
+          close: false,
         });
         evaluation = await this.evaluationRepository.save(evaluation);
       });
-
       return project;
     } catch (error) {
       console.error("Errore durante il recupero del progetto:", error);

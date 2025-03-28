@@ -31,7 +31,7 @@ export class EvaluationService {
         where: {
           user: { id: userId },
           project: { id: projectId },
-          endDate: LessThan(new Date()), // Solo valutazioni con endDate minore della data odierna
+          close: true, // Solo valutazioni con endDate minore della data odierna
         },
         order: { evaluationDate: "DESC" }, // Ordina per data in ordine decrescente
         relations: ["user", "project", "values", "values.skill"], // Carica le relazioni se necessarie

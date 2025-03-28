@@ -27,6 +27,9 @@ export class Evaluation {
   @CreateDateColumn()
   endDate?: Date;
 
+  @Column()
+  close?: boolean;
+
   @CreateDateColumn()
   evaluationDate!: Date; // Data della valutazione con vincolo di unicità
 

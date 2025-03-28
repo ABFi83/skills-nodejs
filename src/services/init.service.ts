@@ -152,6 +152,7 @@ export class InitService {
         project: newProject,
         startDate: new Date("2024-02-01"),
         endDate: new Date("2024-02-28"),
+        close: true,
       });
       evaluation = await this.evaluationRepository.save(evaluation);
 
@@ -182,6 +183,7 @@ export class InitService {
         project: newProject,
         startDate: new Date("2024-01-01"),
         endDate: new Date("2024-01-31"),
+        close: true,
       });
       evaluationOld = await this.evaluationRepository.save(evaluationOld);
 
@@ -212,6 +214,7 @@ export class InitService {
         project: newProject,
         startDate: new Date("2024-02-28"),
         endDate: new Date("2024-02-28"),
+        close: true,
       });
       evaluation1 = await this.evaluationRepository.save(evaluation1);
 
@@ -241,6 +244,7 @@ export class InitService {
         project: newProject,
         startDate: new Date("2024-01-31"),
         endDate: new Date("2024-01-31"),
+        close: true,
       });
       evaluationOldSn = await this.evaluationRepository.save(evaluationOldSn);
 
@@ -285,6 +289,7 @@ export class InitService {
         project: newProject2,
         startDate: new Date("2024-01-28"),
         endDate: new Date("2024-01-28"),
+        close: true,
       });
       evaluationNP2 = await this.evaluationRepository.save(evaluationNP2);
 
