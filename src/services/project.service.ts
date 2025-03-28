@@ -52,66 +52,111 @@ export class ProjectService {
           "userProjects.project.evaluation.values",
           "userProjects.project.evaluation.values.skill",
           "userProjects.role",
+          "userProjects.user",
+          "userProjects.project.userProjects",
+          "userProjects.project.userProjects.user",
         ],
       });
       if (!user || !user.userProjects) {
         throw new Error("L'utente non esiste o non ha progetti associati.");
       }
-
+      console.log(user.userProjects[0].project.userProjects);
       const projects = user.userProjects;
+      let projectResponses: ProjectResponse[] = [];
+      if (!user.isAdmin)
+        projectResponses = await Promise.all(
+          projects.map(async (userProject: UserProject) => {
+            let lastEva: Evaluation | null =
+              await this.evaluationService.getLastEvaluationByUserAndProject(
+                user.id,
+                userProject.project.id
+              );
 
-      const projectResponses = await Promise.all(
-        projects.map(async (userProject: UserProject) => {
-          let lastEva: Evaluation | null =
-            await this.evaluationService.getLastEvaluationByUserAndProject(
-              user.id,
-              userProject.project.id
-            );
+            let response: ProjectResponse = {
+              id: userProject.project.id,
+              projectName: userProject.project.name,
+              role: {
+                id: userProject.role.id,
+                code: userProject.role.code,
+                name: userProject.role.name,
+              },
+              description: userProject.project.description,
+              users: [],
 
-          let response: ProjectResponse = {
-            id: userProject.project.id,
-            projectName: userProject.project.name,
-            role: {
-              id: userProject.role.id,
-              code: userProject.role.code,
-              name: userProject.role.name,
-            },
-            description: userProject.project.description,
-            users: [],
-
-            labelEvaluations: userProject.project.skills
-              ? userProject.project.skills.map((skill: Skill) => {
-                  let label = {
-                    id: skill.id,
-                    label: skill.name,
-                    shortLabel: skill.shortName,
-                  };
-                  return label;
-                })
-              : [],
-            evaluations: lastEva
-              ? [
-                  {
-                    id: lastEva.id,
-                    label: lastEva.evaluationDate.toLocaleDateString(), //01/01/2024
-                    ratingAverage: this.calcolaMedia(lastEva.values),
-                    values: lastEva.values
-                      ? lastEva.values.map((value: Value) => {
-                          let v = {
-                            id: value.id,
-                            skill: value.skill.name,
-                            value: value.value,
+              labelEvaluations: userProject.project.skills
+                ? userProject.project.skills.map((skill: Skill) => {
+                    let label = {
+                      id: skill.id,
+                      label: skill.name,
+                      shortLabel: skill.shortName,
+                    };
+                    return label;
+                  })
+                : [],
+              evaluations: lastEva
+                ? [
+                    {
+                      id: lastEva.id,
+                      label: lastEva.evaluationDate.toLocaleDateString(), //01/01/2024
+                      ratingAverage: this.calcolaMedia(lastEva.values),
+                      values: lastEva.values
+                        ? lastEva.values.map((value: Value) => {
+                            let v = {
+                              id: value.id,
+                              skill: value.skill.name,
+                              value: value.value,
+                            };
+                            return v;
+                          })
+                        : [],
+                    },
+                  ]
+                : [],
+            };
+            return response;
+          })
+        );
+      else
+        projectResponses = await Promise.all(
+          projects.map(async (userProject: UserProject) => {
+            let response: ProjectResponse = {
+              id: userProject.project.id,
+              projectName: userProject.project.name,
+              role: {
+                id: userProject.role.id,
+                code: userProject.role.code,
+                name: userProject.role.name,
+              },
+              description: userProject.project.description,
+              users:
+                userProject.project && userProject.project.userProjects
+                  ? await Promise.all(
+                      userProject.project.userProjects
+                        .filter((up) => !up.user.isAdmin) // Esclude gli admin
+                        .map(async (up) => {
+                          let lastEva: Evaluation | null =
+                            await this.evaluationService.getLastEvaluationByUserAndProject(
+                              up.user.id,
+                              userProject.project.id
+                            );
+                          return {
+                            id: up.user.id,
+                            username: up.user.username,
+                            ratingAverage: lastEva
+                              ? this.calcolaMedia(lastEva.values)
+                              : 0,
+                            code: up.user.code,
                           };
-                          return v;
                         })
-                      : [],
-                  },
-                ]
-              : [],
-          };
-          return response;
-        })
-      );
+                    )
+                  : [],
+
+              labelEvaluations: [],
+              evaluations: [],
+            };
+            return response;
+          })
+        );
       return projectResponses.filter((p): p is ProjectResponse => p !== null);
     } catch (error) {
       console.error(

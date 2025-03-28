@@ -6,4 +6,5 @@ export interface UserResponse {
   name?: string;
   surname?: string;
   role?: RoleResponse;
+  ratingAverage?: number;
 }

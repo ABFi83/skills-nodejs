@@ -50,6 +50,14 @@ export class InitService {
         throw new Error("Utente non trovato!");
       }
 
+      const userLm = await this.userRepository.findOne({
+        where: { id: 3 },
+        relations: ["userProjects"],
+      });
+      if (!userLm) {
+        throw new Error("Utente non trovato!");
+      }
+
       let client = await this.clientRepository.findOne({
         where: { code: "LUM" },
       });
@@ -134,6 +142,17 @@ export class InitService {
         role1 = await this.roleRepository.save(role1);
       }
 
+      let roleLm = await this.roleRepository.findOne({
+        where: { name: "Line Manager" },
+      });
+      if (!roleLm) {
+        roleLm = this.roleRepository.create({
+          code: "LM",
+          name: "Line Manager",
+        });
+        roleLm = await this.roleRepository.save(roleLm);
+      }
+
       const userProject = new UserProject();
       userProject.user = user;
       userProject.project = newProject;
@@ -145,6 +164,12 @@ export class InitService {
       userProject1.project = newProject;
       userProject1.role = role1;
       await this.userProjectRepository.save(userProject1);
+
+      const userProjectLm = new UserProject();
+      userProjectLm.user = userLm;
+      userProjectLm.project = newProject;
+      userProjectLm.role = roleLm;
+      await this.userProjectRepository.save(userProjectLm);
 
       let evaluation = this.evaluationRepository.create({
         evaluationDate: new Date("2024-02-28"),
@@ -282,6 +307,12 @@ export class InitService {
       userProject3.project = newProject2;
       userProject3.role = role;
       await this.userProjectRepository.save(userProject3);
+
+      const userProjectLm2 = new UserProject();
+      userProjectLm2.user = userLm;
+      userProjectLm2.project = newProject2;
+      userProjectLm2.role = roleLm;
+      await this.userProjectRepository.save(userProjectLm2);
 
       let evaluationNP2 = this.evaluationRepository.create({
         evaluationDate: new Date("2024-01-28"),
