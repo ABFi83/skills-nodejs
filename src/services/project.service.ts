@@ -381,18 +381,18 @@ export class ProjectService {
       });
 
       if (!project) throw new Error("Progetto non trovato.");
-
-      project?.userProjects.forEach(async (userProject: UserProject) => {
-        let evaluation = this.evaluationRepository.create({
-          startDate: evaluationRequest.startDate,
-          endDate: evaluationRequest.endDate,
-          evaluationDate: evaluationRequest.evaluationDate,
-          user: userProject.user,
-          project: project,
-          close: false,
+      if (project?.userProjects)
+        project?.userProjects.forEach(async (userProject: UserProject) => {
+          let evaluation = this.evaluationRepository.create({
+            startDate: evaluationRequest.startDate,
+            endDate: evaluationRequest.endDate,
+            evaluationDate: evaluationRequest.evaluationDate,
+            user: userProject.user,
+            project: project,
+            close: false,
+          });
+          evaluation = await this.evaluationRepository.save(evaluation);
         });
-        evaluation = await this.evaluationRepository.save(evaluation);
-      });
       return project;
     } catch (error) {
       console.error("Errore durante il recupero del progetto:", error);

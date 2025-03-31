@@ -57,6 +57,15 @@ app.get("/projects/all", authMiddleware, (req, res) =>
 app.post("/projects", authMiddleware, (req, res) =>
   projectController.createProject(req, res)
 );
+
+app.put("/projects/:id", authMiddleware, (req, res) =>
+  projectController.updateProjectDetail(req, res)
+);
+
+app.post("/projects/:id/upload", authMiddleware, (req, res) =>
+  projectController.uploadProjectFile(req, res)
+);
+
 app.delete("/projects/:id", authMiddleware, (req, res) =>
   projectController.deleteProject(req, res)
 );
@@ -78,7 +87,7 @@ app.get("/evaluation", (req, res) =>
 
 app.post("/token", (req, res) => tokenController.createToken(req, res));
 app.post("/init", (req, res) => initController.init(req, res));
-app.get("/client", (req, res) => clientController.getAllClients(req, res));
+app.get("/clients", (req, res) => clientController.getAllClients(req, res));
 
 app.get("/logo/:clientId", (req, res) => {
   const { clientId } = req.params;

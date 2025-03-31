@@ -10,16 +10,6 @@ export class ProjectController {
     this.projectService = new ProjectService();
   }
 
-  async createProject(req: Request, res: Response): Promise<void> {
-    try {
-      //const project: Project = req.body as Project;
-      //const response = await this.projectService.createProject(project);
-      //res.json(response);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-
   async deleteProject(req: Request, res: Response): Promise<void> {
     try {
       const projectId = parseInt(req.params.id);
@@ -87,6 +77,36 @@ export class ProjectController {
     try {
       const project = await this.projectService.getAllProject();
       res.json(project);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async createProject(req: Request, res: Response): Promise<void> {
+    try {
+      const project: Project = req.body as Project;
+      //const response = await this.projectService.createProject(project);
+      //res.json(response);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async updateProjectDetail(req: Request, res: Response): Promise<void> {
+    try {
+      //const project: Project = req.body as Project;
+      //const response = await this.projectService.createProject(project);
+      //res.json(response);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async uploadProjectFile(req: Request, res: Response): Promise<void> {
+    try {
+      //const project: Project = req.body as Project;
+      //const response = await this.projectService.createProject(project);
+      //res.json(response);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
