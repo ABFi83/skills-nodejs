@@ -9,6 +9,7 @@ import { TokenController } from "./controllers/token.controller";
 import { InitController } from "./controllers/init.controller";
 
 import { ClientController } from "./controllers/client.controller";
+import { RoleController } from "./controllers/role.controller";
 
 const app: Application = express();
 const cors = require("cors");
@@ -23,7 +24,7 @@ const initController = new InitController();
 const evaluationController = new EvaluationController();
 const projectController = new ProjectController();
 const clientController = new ClientController();
-
+const roleController = new RoleController();
 // Aggiungi il middleware di autenticazione su rotte che richiedono l'autenticazione
 app.get("/users", authMiddleware, (req, res) =>
   userController.getAllUsers(req, res)
@@ -88,6 +89,12 @@ app.get("/evaluation", (req, res) =>
 app.post("/token", (req, res) => tokenController.createToken(req, res));
 app.post("/init", (req, res) => initController.init(req, res));
 app.get("/clients", (req, res) => clientController.getAllClients(req, res));
+
+app.get("/roles", (req, res) => roleController.getAllRoles(req, res));
+app.get("/roles/:id", (req, res) => roleController.getRoleById(req, res));
+app.post("/roles", (req, res) => roleController.createRole(req, res));
+app.put("/roles/:id", (req, res) => roleController.updateRole(req, res));
+app.delete("/roles/:id", (req, res) => roleController.deleteRole(req, res));
 
 app.get("/logo/:clientId", (req, res) => {
   const { clientId } = req.params;
