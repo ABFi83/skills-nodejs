@@ -3,6 +3,7 @@ import { FindOptionsWhere, Repository } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { Project } from "../entity/project.entity";
 import {
+  CreateProjectRequest,
   EvaluationRequest,
   ProjectResponse,
   ValueRequest,
@@ -13,6 +14,7 @@ import { Value } from "../entity/values.entity";
 import { Skill } from "../entity/skill.entity";
 import { UserProject } from "../entity/userproject.entity";
 import { Role } from "../entity/role.entity";
+import { Client } from "../entity/client.entity";
 
 export class ProjectService {
   private projectRepository: Repository<Project>;
@@ -23,6 +25,7 @@ export class ProjectService {
   private evaluationService: EvaluationService;
   private userProjectRepository: Repository<UserProject>;
   private roleRepository: Repository<Role>;
+  private clientRepository: Repository<Client>;
 
   constructor() {
     this.projectRepository = AppDataSource.getRepository(Project); // Ottieni il repository per Project
@@ -33,6 +36,7 @@ export class ProjectService {
     this.valueRepository = AppDataSource.getRepository(Value);
     this.userProjectRepository = AppDataSource.getRepository(UserProject);
     this.roleRepository = AppDataSource.getRepository(Role);
+    this.clientRepository = AppDataSource.getRepository(Client);
   }
 
   async getAllProject(): Promise<Project[]> {
@@ -60,7 +64,7 @@ export class ProjectService {
       if (!user || !user.userProjects) {
         throw new Error("L'utente non esiste o non ha progetti associati.");
       }
-      console.log(user.userProjects[0].project.userProjects);
+
       const projects = user.userProjects;
       let projectResponses: ProjectResponse[] = [];
       if (!user.isAdmin)
@@ -397,6 +401,58 @@ export class ProjectService {
     } catch (error) {
       console.error("Errore durante il recupero del progetto:", error);
       throw new Error("Non è stato possibile recuperare il progetto.");
+    }
+  }
+
+  async createProject(
+    projectData: CreateProjectRequest,
+    userId: number
+  ): Promise<Project> {
+    try {
+      let client = await this.clientRepository.findOne({
+        where: { code: projectData.clientCode },
+      });
+      if (!client) {
+        client = this.clientRepository.create({
+          name: "",
+          code: projectData.clientCode,
+          file: "",
+        });
+        client = await this.clientRepository.save(client);
+      }
+      const newProject: Partial<Project> = {
+        name: projectData.projectName,
+        description: projectData.description,
+        client: client,
+      };
+      const project = this.projectRepository.create(newProject);
+      const savedProject = await this.projectRepository.save(project);
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new Error("Utente non trovato.");
+      }
+
+      let roleLm = await this.roleRepository.findOne({
+        where: { name: "Line Manager" },
+      });
+      if (!roleLm) {
+        roleLm = this.roleRepository.create({
+          code: "LM",
+          name: "Line Manager",
+        });
+        roleLm = await this.roleRepository.save(roleLm);
+      }
+
+      const userProject = this.userProjectRepository.create({
+        user: user,
+        project: savedProject,
+        role: roleLm,
+      });
+      await this.userProjectRepository.save(userProject);
+      return savedProject;
+    } catch (error) {
+      console.error("Errore durante la creazione del progetto:", error);
+      throw new Error("Non è stato possibile creare il progetto.");
     }
   }
 }

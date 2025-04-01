@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { ProjectService } from "../services/project.service";
 import { Project } from "../entity/project.entity";
-import { EvaluationRequest, ValueRequest } from "../models/project.model";
+import {
+  EvaluationRequest,
+  ValueRequest,
+  CreateProjectRequest,
+} from "../models/project.model";
 
 export class ProjectController {
   private projectService: ProjectService;
@@ -84,9 +88,15 @@ export class ProjectController {
 
   async createProject(req: Request, res: Response): Promise<void> {
     try {
-      const project: Project = req.body as Project;
-      //const response = await this.projectService.createProject(project);
-      //res.json(response);
+      const userId = (req as any).user.userId; // Recupera l'ID dell'utente dal token
+      const projectData: CreateProjectRequest = req.body; // Dati del progetto dal corpo della richiesta
+
+      // Passa i dati del progetto e l'ID dell'utente al servizio
+      const response = await this.projectService.createProject(
+        projectData,
+        userId
+      );
+      res.json(response);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
