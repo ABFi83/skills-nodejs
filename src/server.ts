@@ -63,10 +63,6 @@ app.put("/projects/:id", authMiddleware, (req, res) =>
   projectController.updateProjectDetail(req, res)
 );
 
-app.post("/projects/:id/upload", authMiddleware, (req, res) =>
-  projectController.uploadProjectFile(req, res)
-);
-
 app.delete("/projects/:id", authMiddleware, (req, res) =>
   projectController.deleteProject(req, res)
 );
@@ -96,6 +92,14 @@ app.post("/roles", (req, res) => roleController.createRole(req, res));
 app.put("/roles/:id", (req, res) => roleController.updateRole(req, res));
 app.delete("/roles/:id", (req, res) => roleController.deleteRole(req, res));
 
+app.get("/projects/:projectId/evaluations", async (req, res) => {
+  try {
+    await projectController.getEvaluationsByProjectAndDate(req, res);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 app.get("/logo/:clientId", (req, res) => {
   const { clientId } = req.params;
   const imagePath = path.join(__dirname, "images", `${clientId}.jpg`);
@@ -106,7 +110,9 @@ app.get("/logo/:clientId", (req, res) => {
     }
   });
 });
-
+app.get("/projects/:id/evaluations-dates", (req, res) =>
+  projectController.getEvaluationDates(req, res)
+);
 const port = 3001;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

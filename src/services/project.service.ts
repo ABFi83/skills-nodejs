@@ -3,6 +3,7 @@ import { FindOptionsWhere, Repository } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { Project } from "../entity/project.entity";
 import {
+  EvaluationLM,
   EvaluationRequest,
   ProjectRequest,
   ProjectResponse,
@@ -560,6 +561,112 @@ export class ProjectService {
     } catch (error) {
       console.error("Errore durante la creazione del progetto:", error);
       throw new Error("Non è stato possibile creare il progetto.");
+    }
+  }
+
+  async getEvaluationDates(projectId: number): Promise<Date[]> {
+    try {
+      // Recupera le valutazioni distinte per utente, ordinate per evaluationDate in ordine decrescente
+      const evaluations = await this.evaluationRepository
+        .createQueryBuilder("evaluation")
+        .select("evaluation.evaluationDate", "evaluationDate")
+        .where("evaluation.projectId = :projectId", { projectId })
+        .orderBy("evaluation.evaluationDate", "DESC")
+        .getRawMany();
+
+      // Rimuovi duplicati basandoti su evaluationDate
+      const uniqueDates = Array.from(
+        new Set(evaluations.map((evaluation) => evaluation.evaluationDate))
+      );
+
+      // Restituisci solo le date
+      return uniqueDates;
+    } catch (error) {
+      console.error(
+        "Errore durante il recupero delle date di valutazione:",
+        error
+      );
+      throw new Error(
+        "Non è stato possibile recuperare le date di valutazione."
+      );
+    }
+  }
+
+  async getEvaluationsByProjectAndDate(
+    projectId: number,
+    evaluationDate: string
+  ): Promise<EvaluationLM[]> {
+    try {
+      // Recupera il progetto con le valutazioni, utenti e competenze
+      const project = await this.projectRepository.findOne({
+        where: { id: projectId },
+        relations: [
+          "userProjects",
+          "userProjects.user",
+          "userProjects.role",
+          "skills",
+          "evaluation",
+          "evaluation.values",
+          "evaluation.values.skill",
+          "evaluation.user",
+        ],
+      });
+
+      if (!project || !project.userProjects) {
+        throw new Error("Progetto non trovato.");
+      }
+
+      // Filtra gli utenti che non hanno il ruolo "Line Manager" (LM)
+      const nonLmUsers = project.userProjects.filter(
+        (userProject) => userProject.role.name !== "Line Manager"
+      );
+
+      // Filtra le valutazioni per la data specificata
+      const evaluationsForDate = project.evaluation?.filter(
+        (evaluation) =>
+          evaluation.evaluationDate.toISOString().split("T")[0] ===
+          evaluationDate.split("T")[0]
+      );
+
+      if (!evaluationsForDate || evaluationsForDate.length === 0) {
+        throw new Error("Nessuna valutazione trovata per la data specificata.");
+      }
+
+      // Costruisci la lista di EvaluationLM
+      const evaluationLMList: EvaluationLM[] = [];
+
+      for (const userProject of nonLmUsers) {
+        const userEvaluations = evaluationsForDate.filter(
+          (evaluation) => evaluation.user.id === userProject.user.id
+        );
+
+        for (const evaluation of userEvaluations) {
+          for (const value of evaluation.values || []) {
+            evaluationLMList.push({
+              skillId: value.skill.id.toString(),
+              userId: evaluation.user.id.toString(),
+              score: value.value,
+              user: {
+                id: evaluation.user.id,
+                username: evaluation.user.username,
+                name: evaluation.user.name,
+                surname: evaluation.user.surname,
+                //code: evaluation.user.code,
+              },
+            });
+          }
+        }
+      }
+
+      return evaluationLMList;
+    } catch (error) {
+      console.error(
+        "Errore durante il recupero delle valutazioni per progetto e data:",
+        error
+      );
+      throw new Error(
+        "Non è stato possibile recuperare le valutazioni per progetto e data."
+      );
     }
   }
 }

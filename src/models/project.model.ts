@@ -64,3 +64,10 @@ export interface ProjectRequest {
   users: UserResponse[];
   skills: LabelResponse[];
 }
+
+export interface EvaluationLM {
+  skillId: string; // ID of the skill
+  userId: string; // ID of the user
+  score: number; // Score for the skill
+  user: UserResponse; // User details
+}
