@@ -3,8 +3,8 @@ import { ProjectService } from "../services/project.service";
 import { Project } from "../entity/project.entity";
 import {
   EvaluationRequest,
+  ProjectRequest,
   ValueRequest,
-  CreateProjectRequest,
 } from "../models/project.model";
 
 export class ProjectController {
@@ -89,7 +89,7 @@ export class ProjectController {
   async createProject(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).user.userId; // Recupera l'ID dell'utente dal token
-      const projectData: CreateProjectRequest = req.body; // Dati del progetto dal corpo della richiesta
+      const projectData: ProjectRequest = req.body; // Dati del progetto dal corpo della richiesta
 
       // Passa i dati del progetto e l'ID dell'utente al servizio
       const response = await this.projectService.createProject(
@@ -104,9 +104,13 @@ export class ProjectController {
 
   async updateProjectDetail(req: Request, res: Response): Promise<void> {
     try {
-      //const project: Project = req.body as Project;
-      //const response = await this.projectService.createProject(project);
-      //res.json(response);
+      const projectData: ProjectRequest = req.body; // Dati del progetto dal corpo della richiesta
+      const projectId = parseInt(req.params.id);
+      const response = await this.projectService.updateProject(
+        projectId,
+        projectData
+      );
+      res.json(response);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

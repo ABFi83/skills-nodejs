@@ -3,8 +3,8 @@ import { FindOptionsWhere, Repository } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { Project } from "../entity/project.entity";
 import {
-  CreateProjectRequest,
   EvaluationRequest,
+  ProjectRequest,
   ProjectResponse,
   ValueRequest,
 } from "../models/project.model"; // Supponiamo che ProjectResponse sia un DTO
@@ -175,7 +175,7 @@ export class ProjectService {
     try {
       const project = await this.projectRepository.findOne({
         where: { id },
-        relations: ["users", "skills", "evaluations"],
+        relations: ["userProjects", "skills", "evaluation"],
       });
       if (!project) {
         throw new Error("Progetto non trovato.");
@@ -216,7 +216,7 @@ export class ProjectService {
             value: v.value,
             evaluation: evaluation,
           });
-          console.log(value);
+
           await this.valueRepository.save(value);
         }
       });
@@ -230,14 +230,120 @@ export class ProjectService {
 
   async updateProject(
     id: number,
-    updatedProject: Partial<Project>
+    updatedProject: ProjectRequest
   ): Promise<Project> {
     try {
+      // Recupera il progetto dal database
       const project = await this.getProjectById(id);
       if (!project) {
         throw new Error("Progetto non trovato.");
       }
-      Object.assign(project, updatedProject);
+
+      // Aggiorna i campi principali del progetto
+      project.name = updatedProject.projectName || project.name;
+      project.description = updatedProject.description || project.description;
+
+      // Gestione del client
+      if (updatedProject.clientCode) {
+        let client = await this.clientRepository.findOne({
+          where: { code: updatedProject.clientCode },
+        });
+        if (!client) {
+          client = this.clientRepository.create({
+            code: updatedProject.clientCode,
+            name: updatedProject.clientName || "",
+            file: "",
+          });
+          client = await this.clientRepository.save(client);
+        }
+        project.client = client;
+      }
+
+      // Gestione degli utenti (userProjects)
+      if (updatedProject.users) {
+        const currentUserProjects = await this.userProjectRepository.find({
+          where: { project: { id: project.id } },
+          relations: ["user", "role"],
+        });
+
+        // Trova gli utenti da aggiungere
+        const updatedUserIds = updatedProject.users.map((u) => u.id);
+        const usersToAdd = updatedProject.users.filter(
+          (u) => !currentUserProjects.some((up) => up.user.id === u.id)
+        );
+
+        // Trova gli utenti da rimuovere
+        const usersToRemove = currentUserProjects.filter(
+          (up) => !updatedUserIds.includes(up.user.id)
+        );
+
+        // Rimuovi gli utenti non più presenti
+        for (const userProject of usersToRemove) {
+          console.log("DELETE", userProject.user.username);
+          await this.userProjectRepository.remove(userProject);
+        }
+
+        // Aggiungi i nuovi utenti
+        for (const userData of usersToAdd) {
+          const user = await this.userRepository.findOne({
+            where: { id: userData.id },
+          });
+          if (!user) {
+            throw new Error(`Utente con ID ${userData.id} non trovato.`);
+          }
+
+          if (userData.role) {
+            const role = await this.roleRepository.findOne({
+              where: { id: userData.role.id },
+            });
+            if (!role) {
+              throw new Error(`Ruolo con ID ${userData.role.id} non trovato.`);
+            }
+            const userProject = this.userProjectRepository.create({
+              user: user,
+              project: project,
+              role: role,
+            });
+
+            const savedUserProject = await this.userProjectRepository.save(
+              userProject
+            );
+
+            project.userProjects = [
+              ...(project.userProjects || []),
+              ...[savedUserProject],
+            ];
+          }
+        }
+      }
+
+      // Gestione delle competenze (skills)
+      if (updatedProject.skills) {
+        const currentSkills = project.skills || [];
+
+        // Trova le skill da aggiungere
+        const updatedSkillIds = updatedProject.skills.map((s) => s.id);
+        const skillsToAdd = await this.skillRepository.findByIds(
+          updatedSkillIds.filter(
+            (id) => !currentSkills.some((s) => s.id === id)
+          )
+        );
+
+        // Trova le skill da rimuovere
+        const skillsToRemove = currentSkills.filter(
+          (s) => !updatedSkillIds.includes(s.id)
+        );
+
+        // Rimuovi le skill non più presenti
+        project.skills = currentSkills.filter(
+          (s) => !skillsToRemove.some((skill) => skill.id === s.id)
+        );
+
+        // Aggiungi le nuove skill
+        project.skills = [...project.skills, ...skillsToAdd];
+      }
+
+      // Salva il progetto aggiornato nel database
       return await this.projectRepository.save(project);
     } catch (error) {
       console.error("Errore durante l'aggiornamento del progetto:", error);
@@ -289,6 +395,7 @@ export class ProjectService {
       if (!project) {
         throw new Error("Progetto non trovato.");
       }
+
       project.evaluation = (
         project.evaluation?.filter((e) => e.user.id === userId) || []
       ).sort((a, b) => b.evaluationDate.getTime() - a.evaluationDate.getTime());
@@ -405,7 +512,7 @@ export class ProjectService {
   }
 
   async createProject(
-    projectData: CreateProjectRequest,
+    projectData: ProjectRequest,
     userId: number
   ): Promise<Project> {
     try {

@@ -55,9 +55,12 @@ export interface ValueRequest {
 
   values: ValueResponse[];
 }
-export interface CreateProjectRequest {
+
+export interface ProjectRequest {
   projectName: string;
   description: string;
   clientCode: string;
   clientName: string;
+  users: UserResponse[];
+  skills: LabelResponse[];
 }
