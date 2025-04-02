@@ -5,6 +5,7 @@ import { Project } from "../entity/project.entity";
 import {
   EvaluationLM,
   EvaluationRequest,
+  EvaluationsLM,
   ProjectRequest,
   ProjectResponse,
   ValueRequest,
@@ -595,7 +596,7 @@ export class ProjectService {
   async getEvaluationsByProjectAndDate(
     projectId: number,
     evaluationDate: string
-  ): Promise<EvaluationLM[]> {
+  ): Promise<EvaluationsLM> {
     try {
       // Recupera il progetto con le valutazioni, utenti e competenze
       const project = await this.projectRepository.findOne({
@@ -612,7 +613,12 @@ export class ProjectService {
         ],
       });
 
-      if (!project || !project.userProjects) {
+      if (
+        !project ||
+        !project.userProjects ||
+        !project.evaluation ||
+        !project.skills
+      ) {
         throw new Error("Progetto non trovato.");
       }
 
@@ -634,6 +640,7 @@ export class ProjectService {
 
       // Costruisci la lista di EvaluationLM
       const evaluationLMList: EvaluationLM[] = [];
+      const skillSet = new Set<number>(); // Per raccogliere le skill con almeno una valutazione
 
       for (const userProject of nonLmUsers) {
         const userEvaluations = evaluationsForDate.filter(
@@ -644,21 +651,36 @@ export class ProjectService {
           for (const value of evaluation.values || []) {
             evaluationLMList.push({
               skillId: value.skill.id.toString(),
-              userId: evaluation.user.id.toString(),
               score: value.value,
               user: {
                 id: evaluation.user.id,
                 username: evaluation.user.username,
                 name: evaluation.user.name,
                 surname: evaluation.user.surname,
-                //code: evaluation.user.code,
+                code: evaluation.user.code,
               },
             });
+
+            // Aggiungi la skill all'elenco delle skill valutate
+            skillSet.add(value.skill.id);
           }
         }
       }
 
-      return evaluationLMList;
+      // Recupera le skill che hanno almeno una valutazione
+      const evaluatedSkills = project.skills
+        .filter((skill) => skillSet.has(skill.id))
+        .map((skill) => ({
+          id: skill.id,
+          label: skill.name,
+          shortLabel: skill.shortName,
+        }));
+
+      // Restituisci l'oggetto EvaluationsLM
+      return {
+        evaluation: evaluationLMList,
+        skill: evaluatedSkills,
+      };
     } catch (error) {
       console.error(
         "Errore durante il recupero delle valutazioni per progetto e data:",
