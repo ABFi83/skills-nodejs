@@ -14,11 +14,12 @@ RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-
+# Verifica che la cartella /app/build sia stata creata
+RUN ls -al /app/dist
 
 # Usa Nginx per servire l'app
 FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Esporta la porta
 EXPOSE 80
