@@ -21,16 +21,16 @@ export class Evaluation {
   @JoinTable()
   user!: User;
 
-  @CreateDateColumn()
-  startDate?: Date;
+  @Column()
+  startDate!: Date;
 
-  @CreateDateColumn()
-  endDate?: Date;
+  @Column()
+  endDate!: Date;
 
   @Column()
   close?: boolean;
 
-  @CreateDateColumn()
+  @Column()
   evaluationDate!: Date; // Data della valutazione con vincolo di unicità
 
   @ManyToOne(() => Project, { nullable: false, onDelete: "CASCADE" })

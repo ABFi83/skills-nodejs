@@ -502,22 +502,42 @@ export class ProjectService {
       });
 
       if (!project) throw new Error("Progetto non trovato.");
-      if (project?.userProjects)
-        project?.userProjects.forEach(async (userProject: UserProject) => {
-          let evaluation = this.evaluationRepository.create({
-            startDate: evaluationRequest.startDate,
-            endDate: evaluationRequest.endDate,
-            evaluationDate: evaluationRequest.evaluationDate,
+
+      if (project?.userProjects) {
+        for (const userProject of project.userProjects) {
+          // Converte le date in oggetti Date validi
+          const startDate = new Date(evaluationRequest.startDate);
+          const endDate = new Date(evaluationRequest.endDate);
+          const evaluationDate = new Date(evaluationRequest.evaluationDate);
+
+          // Verifica che le date siano valide
+          if (
+            isNaN(startDate.getTime()) ||
+            isNaN(endDate.getTime()) ||
+            isNaN(evaluationDate.getTime())
+          ) {
+            throw new Error("Una o più date fornite non sono valide.");
+          }
+          // Crea l'entità Evaluation con i valori corretti
+          const evaluation = this.evaluationRepository.create({
+            startDate,
+            endDate,
+            evaluationDate,
             user: userProject.user,
             project: project,
             close: false,
           });
-          evaluation = await this.evaluationRepository.save(evaluation);
-        });
+
+          // Salva l'entità Evaluation
+          await this.evaluationRepository.save(evaluation);
+
+          console.log("save", evaluation);
+        }
+      }
       return project;
     } catch (error) {
-      console.error("Errore durante il recupero del progetto:", error);
-      throw new Error("Non è stato possibile recuperare il progetto.");
+      console.error("Errore durante il salvataggio della valutazione:", error);
+      throw new Error("Non è stato possibile salvare la valutazione.");
     }
   }
 

@@ -54,6 +54,7 @@ export class ProjectController {
       const projectId = parseInt(req.params.id);
       const evaluationRequest: EvaluationRequest =
         req.body as EvaluationRequest;
+      console.log("evaluationRequest", evaluationRequest);
       const project = await this.projectService.createEvaluation(
         projectId,
         evaluationRequest
@@ -157,7 +158,6 @@ export class ProjectController {
         new Date()
       );
       const isoDate = formatISO(parsedDate, { representation: "complete" });
-      console.log("ISO Date:", isoDate);
 
       const evaluations =
         await this.projectService.getEvaluationsByProjectAndDate(
