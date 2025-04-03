@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { Repository, Like } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { Skill } from "../entity/skill.entity";
 
@@ -10,9 +10,15 @@ export class SkillService {
   }
 
   // Recupera tutte le skill
-  async getAllSkills(): Promise<Skill[]> {
+  async getAllSkills(search?: string): Promise<Skill[]> {
     try {
-      return await this.skillRepository.find();
+      const whereCondition = search
+        ? { name: Like(`${search}%`) } // Filtra le skill il cui nome contiene il valore di "search"
+        : {};
+
+      return await this.skillRepository.find({
+        where: whereCondition,
+      });
     } catch (error) {
       console.error("Errore durante il recupero delle skill:", error);
       throw new Error("Non è stato possibile recuperare le skill.");

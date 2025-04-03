@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { IsNull, LessThan, Not, Repository } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { Evaluation } from "../entity/evaluation.entity";
 import e from "express";
@@ -31,6 +31,7 @@ export class EvaluationService {
         where: {
           user: { id: userId },
           project: { id: projectId },
+          close: true, // Solo valutazioni con endDate minore della data odierna
         },
         order: { evaluationDate: "DESC" }, // Ordina per data in ordine decrescente
         relations: ["user", "project", "values", "values.skill"], // Carica le relazioni se necessarie

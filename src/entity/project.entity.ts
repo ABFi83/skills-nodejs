@@ -23,7 +23,7 @@ export class Project {
   description: string = "";
 
   @OneToMany(() => UserProject, (userProject) => userProject.project)
-  userProjects!: UserProject[];
+  userProjects?: UserProject[];
 
   @ManyToOne(() => Client, (client) => client.project)
   client!: Client;

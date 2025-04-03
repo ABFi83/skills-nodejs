@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { Repository, Like } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { User } from "../entity/user.entity";
 import bcrypt from "bcrypt";
@@ -10,9 +10,15 @@ export class UserService {
   }
 
   // Recupera tutti gli utenti
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(search?: string): Promise<User[]> {
     try {
-      return await this.userRepository.find(); // Restituisce tutti gli utenti
+      const whereCondition = search
+        ? { username: Like(`${search}%`) } // Filtra gli utenti il cui username contiene il valore di "search"
+        : {};
+
+      return await this.userRepository.find({
+        where: whereCondition,
+      });
     } catch (error) {
       console.error("Errore durante il recupero degli utenti:", error);
       throw new Error("Non è stato possibile recuperare gli utenti.");

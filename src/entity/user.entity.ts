@@ -8,6 +8,7 @@ import {
 } from "typeorm";
 
 import { UserProject } from "./userproject.entity";
+import { Role } from "./role.entity";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -25,6 +26,12 @@ export class User {
   @Column()
   password!: string;
 
+  @Column()
+  code!: string;
+
   @OneToMany(() => UserProject, (userProject) => userProject.user)
   userProjects?: UserProject[];
+
+  @Column({ nullable: true })
+  isAdmin!: boolean;
 }

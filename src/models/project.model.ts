@@ -1,4 +1,5 @@
 import { UserResponse } from "./user.model";
+import { Evaluation } from "../entity/evaluation.entity";
 
 export interface ProjectResponse {
   id: number;
@@ -38,5 +39,38 @@ export interface EvaluationResponse {
   id: number;
   label: string;
   ratingAverage: number;
+  startDate?: Date;
+  endDate?: Date;
+  close?: boolean;
   values: ValueResponse[];
+}
+
+export interface EvaluationRequest {
+  startDate: Date;
+  endDate: Date;
+  evaluationDate: Date;
+}
+export interface ValueRequest {
+  evaluationId?: number;
+
+  values: ValueResponse[];
+}
+
+export interface ProjectRequest {
+  projectName: string;
+  description: string;
+  clientCode: string;
+  clientName: string;
+  users: UserResponse[];
+  skills: LabelResponse[];
+}
+
+export interface EvaluationLM {
+  skillId: string; // ID of the skill
+  score: number; // Score for the skill
+  user: UserResponse; // User details
+}
+export interface EvaluationsLM {
+  evaluation: EvaluationLM[];
+  skill: LabelResponse[];
 }

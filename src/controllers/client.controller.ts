@@ -10,17 +10,18 @@ export class ClientController {
     this.clientService = new ClientService();
   }
 
-  // Recupera tutti i client
   async getAllClients(req: Request, res: Response): Promise<void> {
     try {
-      const clients = await this.clientService.getAllClients();
+      const { search } = req.query;
+
+      const clients = await this.clientService.getAllClients(search as string);
+
       res.json(clients);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  // Recupera un client per ID
   async getClientById(req: Request, res: Response): Promise<void> {
     try {
       const clientId = parseInt(req.params.id);

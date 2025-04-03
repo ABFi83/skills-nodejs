@@ -50,6 +50,14 @@ export class InitService {
         throw new Error("Utente non trovato!");
       }
 
+      const userLm = await this.userRepository.findOne({
+        where: { id: 3 },
+        relations: ["userProjects"],
+      });
+      if (!userLm) {
+        throw new Error("Utente non trovato!");
+      }
+
       let client = await this.clientRepository.findOne({
         where: { code: "LUM" },
       });
@@ -134,6 +142,17 @@ export class InitService {
         role1 = await this.roleRepository.save(role1);
       }
 
+      let roleLm = await this.roleRepository.findOne({
+        where: { name: "Line Manager" },
+      });
+      if (!roleLm) {
+        roleLm = this.roleRepository.create({
+          code: "LM",
+          name: "Line Manager",
+        });
+        roleLm = await this.roleRepository.save(roleLm);
+      }
+
       const userProject = new UserProject();
       userProject.user = user;
       userProject.project = newProject;
@@ -146,10 +165,19 @@ export class InitService {
       userProject1.role = role1;
       await this.userProjectRepository.save(userProject1);
 
+      const userProjectLm = new UserProject();
+      userProjectLm.user = userLm;
+      userProjectLm.project = newProject;
+      userProjectLm.role = roleLm;
+      await this.userProjectRepository.save(userProjectLm);
+
       let evaluation = this.evaluationRepository.create({
-        evaluationDate: new Date(),
+        evaluationDate: new Date("2024-02-28"),
         user: user,
         project: newProject,
+        startDate: new Date("2024-02-01"),
+        endDate: new Date("2024-02-28"),
+        close: true,
       });
       evaluation = await this.evaluationRepository.save(evaluation);
 
@@ -175,9 +203,12 @@ export class InitService {
       let yestarday = new Date();
       yestarday.setDate(yestarday.getDate() - 1);
       let evaluationOld = this.evaluationRepository.create({
-        evaluationDate: yestarday,
+        evaluationDate: new Date("2024-01-31"),
         user: user,
         project: newProject,
+        startDate: new Date("2024-01-01"),
+        endDate: new Date("2024-01-31"),
+        close: true,
       });
       evaluationOld = await this.evaluationRepository.save(evaluationOld);
 
@@ -203,9 +234,12 @@ export class InitService {
       await this.valueRepository.save(valueOld2);
 
       let evaluation1 = this.evaluationRepository.create({
-        evaluationDate: new Date(),
+        evaluationDate: new Date("2024-02-28"),
         user: user1,
         project: newProject,
+        startDate: new Date("2024-02-28"),
+        endDate: new Date("2024-02-28"),
+        close: true,
       });
       evaluation1 = await this.evaluationRepository.save(evaluation1);
 
@@ -230,9 +264,12 @@ export class InitService {
 
       yestarday.setDate(yestarday.getDate() - 1);
       let evaluationOldSn = this.evaluationRepository.create({
-        evaluationDate: yestarday,
+        evaluationDate: new Date("2024-01-31"),
         user: user1,
         project: newProject,
+        startDate: new Date("2024-01-31"),
+        endDate: new Date("2024-01-31"),
+        close: true,
       });
       evaluationOldSn = await this.evaluationRepository.save(evaluationOldSn);
 
@@ -271,10 +308,19 @@ export class InitService {
       userProject3.role = role;
       await this.userProjectRepository.save(userProject3);
 
+      const userProjectLm2 = new UserProject();
+      userProjectLm2.user = userLm;
+      userProjectLm2.project = newProject2;
+      userProjectLm2.role = roleLm;
+      await this.userProjectRepository.save(userProjectLm2);
+
       let evaluationNP2 = this.evaluationRepository.create({
-        evaluationDate: new Date(),
+        evaluationDate: new Date("2024-01-28"),
         user: user,
         project: newProject2,
+        startDate: new Date("2024-01-28"),
+        endDate: new Date("2024-01-28"),
+        close: true,
       });
       evaluationNP2 = await this.evaluationRepository.save(evaluationNP2);
 
@@ -283,6 +329,7 @@ export class InitService {
         value: 10,
         evaluation: evaluationNP2,
       });
+
       await this.valueRepository.save(valueNP2);
       let value1NP2 = this.valueRepository.create({
         skill: skill2,

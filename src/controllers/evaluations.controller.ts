@@ -9,7 +9,6 @@ export class EvaluationController {
     this.evaluationService = new EvaluationService();
   }
 
-  // 📌 Recupera tutte le valutazioni
   async getAllEvaluations(req: Request, res: Response): Promise<void> {
     try {
       const evaluations = await this.evaluationService.getAllEvaluations();
@@ -19,26 +18,22 @@ export class EvaluationController {
     }
   }
 
-  // 📌 Recupera una valutazione per ID
   async getEvaluationById(req: Request, res: Response): Promise<void> {
     try {
       const evaluationId = parseInt(req.params.id);
       const evaluation = await this.evaluationService.getEvaluationById(
         evaluationId
       );
-
       if (!evaluation) {
         res.status(404).json({ message: "Valutazione non trovata" });
         return;
       }
-
       res.json(evaluation);
     } catch (error) {
       res.status(500).json({ error: error });
     }
   }
 
-  // 📌 Crea una nuova valutazione
   async createEvaluation(req: Request, res: Response): Promise<void> {
     try {
       const evaluationData: Partial<Evaluation> = req.body;
@@ -51,7 +46,6 @@ export class EvaluationController {
     }
   }
 
-  // 📌 Aggiorna una valutazione esistente
   async updateEvaluation(req: Request, res: Response): Promise<void> {
     try {
       const evaluationId = parseInt(req.params.id);
@@ -67,7 +61,6 @@ export class EvaluationController {
     }
   }
 
-  // 📌 Elimina una valutazione
   async deleteEvaluation(req: Request, res: Response): Promise<void> {
     try {
       const evaluationId = parseInt(req.params.id);

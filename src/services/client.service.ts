@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { Repository, Like } from "typeorm";
 import { Client } from "../entity/client.entity";
 import { AppDataSource } from "../database/database";
 
@@ -10,9 +10,13 @@ export class ClientService {
   }
 
   // Recupera tutti i client
-  async getAllClients(): Promise<Client[]> {
+  async getAllClients(search?: string): Promise<Client[]> {
     try {
-      return await this.clientRepository.find(); // Trova tutti i client
+      const whereCondition = search ? { name: Like(`${search}%`) } : {};
+
+      return await this.clientRepository.find({
+        where: whereCondition,
+      });
     } catch (error) {
       throw new Error("Errore nel recuperare i client: " + error);
     }
