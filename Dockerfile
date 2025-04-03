@@ -8,11 +8,14 @@ WORKDIR /app
 COPY package*.json ./
 
 # Installa le dipendenze
-RUN  npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # Copia il codice e costruisci il progetto
 COPY . .
 RUN npm run build
+
+# Verifica che la cartella /app/build sia stata creata
+RUN ls -al /app/build
 
 # Usa Nginx per servire l'app
 FROM nginx:alpine
