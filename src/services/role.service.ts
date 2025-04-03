@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { Repository, Like } from "typeorm";
 
 import { Role } from "../entity/role.entity";
 import { AppDataSource } from "../database/database";
@@ -11,8 +11,14 @@ export class RoleService {
   }
 
   // Recupera tutti i ruoli
-  async getAllRoles(): Promise<Role[]> {
-    return await this.roleRepository.find();
+  async getAllRoles(search?: string): Promise<Role[]> {
+    const whereCondition = search
+      ? { name: Like(`%${search}`) } // Filtra i ruoli il cui nome contiene il valore di "search"
+      : {};
+
+    return await this.roleRepository.find({
+      where: whereCondition,
+    });
   }
 
   // Recupera un ruolo per ID

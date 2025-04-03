@@ -12,7 +12,11 @@ export class RoleController {
   // Recupera tutti i ruoli
   async getAllRoles(req: Request, res: Response): Promise<void> {
     try {
-      const roles = await this.roleService.getAllRoles();
+      const { search } = req.query; // Recupera il parametro di query "search"
+
+      // Passa il parametro "search" al servizio per filtrare i risultati
+      const roles = await this.roleService.getAllRoles(search as string);
+
       res.json(roles);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

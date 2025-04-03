@@ -38,7 +38,11 @@ export class UserController {
 
   async getAllUsers(req: Request, res: Response): Promise<void> {
     try {
-      const users = await this.userService.getAllUsers();
+      const { search } = req.query; // Recupera il parametro di query "search"
+
+      // Passa il parametro "search" al servizio per filtrare i risultati
+      const users = await this.userService.getAllUsers(search as string);
+
       res.json(users);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

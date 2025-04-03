@@ -12,7 +12,10 @@ export class ClientController {
 
   async getAllClients(req: Request, res: Response): Promise<void> {
     try {
-      const clients = await this.clientService.getAllClients();
+      const { search } = req.query;
+
+      const clients = await this.clientService.getAllClients(search as string);
+
       res.json(clients);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
