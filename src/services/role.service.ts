@@ -13,7 +13,7 @@ export class RoleService {
   // Recupera tutti i ruoli
   async getAllRoles(search?: string): Promise<Role[]> {
     const whereCondition = search
-      ? { name: Like(`%${search}`) } // Filtra i ruoli il cui nome contiene il valore di "search"
+      ? { name: Like(`${search}%`) } // Filtra i ruoli il cui nome contiene il valore di "search"
       : {};
 
     return await this.roleRepository.find({

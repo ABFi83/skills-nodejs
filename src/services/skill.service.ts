@@ -13,7 +13,7 @@ export class SkillService {
   async getAllSkills(search?: string): Promise<Skill[]> {
     try {
       const whereCondition = search
-        ? { name: Like(`%${search}`) } // Filtra le skill il cui nome contiene il valore di "search"
+        ? { name: Like(`${search}%`) } // Filtra le skill il cui nome contiene il valore di "search"
         : {};
 
       return await this.skillRepository.find({

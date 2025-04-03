@@ -13,7 +13,7 @@ export class UserService {
   async getAllUsers(search?: string): Promise<User[]> {
     try {
       const whereCondition = search
-        ? { username: Like(`%${search}`) } // Filtra gli utenti il cui username contiene il valore di "search"
+        ? { username: Like(`${search}%`) } // Filtra gli utenti il cui username contiene il valore di "search"
         : {};
 
       return await this.userRepository.find({
