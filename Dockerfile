@@ -14,8 +14,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-# Verifica che la cartella /app/build sia stata creata
-RUN ls -al /app/build
+
 
 # Usa Nginx per servire l'app
 FROM nginx:alpine
