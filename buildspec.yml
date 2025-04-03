@@ -7,7 +7,6 @@ phases:
       - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 566605793647.dkr.ecr.eu-north-1.amazonaws.com
       - export REPOSITORY_URI=566605793647.dkr.ecr.eu-north-1.amazonaws.com/skill/be
       - export IMAGE_TAG=$(date +%Y%m%d%H%M%S)
-      - echo "Using image tag: $IMAGE_TAG"
 
   build:
     commands:
