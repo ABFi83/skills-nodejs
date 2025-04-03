@@ -289,7 +289,6 @@ export class ProjectService {
 
         // Rimuovi gli utenti non più presenti
         for (const userProject of usersToRemove) {
-          console.log("DELETE", userProject.user.username);
           await this.userProjectRepository.remove(userProject);
         }
 
@@ -527,11 +526,8 @@ export class ProjectService {
             project: project,
             close: false,
           });
-
           // Salva l'entità Evaluation
           await this.evaluationRepository.save(evaluation);
-
-          console.log("save", evaluation);
         }
       }
       return project;

@@ -54,7 +54,6 @@ export class ProjectController {
       const projectId = parseInt(req.params.id);
       const evaluationRequest: EvaluationRequest =
         req.body as EvaluationRequest;
-      console.log("evaluationRequest", evaluationRequest);
       const project = await this.projectService.createEvaluation(
         projectId,
         evaluationRequest
@@ -151,7 +150,6 @@ export class ProjectController {
           message: "projectId e evaluationDate sono obbligatori.",
         });
       }
-      console.log("evaluations", new Date(evaluationDate as string));
       const parsedDate = parse(
         evaluationDate as string,
         "dd/MM/yyyy",
