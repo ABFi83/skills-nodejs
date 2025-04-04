@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # Avvia l'applicazione
-CMD ["npm", "run dev"]
+CMD ["npm", "start"]
