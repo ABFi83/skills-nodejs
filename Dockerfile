@@ -1,5 +1,5 @@
-# Usa l'immagine di Node.js per la build
-FROM node:18 AS build
+# Usa un'immagine Node.js
+FROM node:18
 
 # Imposta la cartella di lavoro
 WORKDIR /app
@@ -10,19 +10,11 @@ COPY package*.json ./
 # Installa le dipendenze
 RUN npm install --legacy-peer-deps
 
-# Copia il codice e costruisci il progetto
+# Copia tutto il codice nel container
 COPY . .
-RUN npm run build
 
-# Verifica che la cartella /app/build sia stata creata
-RUN ls -al /app/dist
+# Espone la porta su cui gira il server Node.js
+EXPOSE 3000
 
-# Usa Nginx per servire l'app
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Esporta la porta
-EXPOSE 80
-
-# Avvia Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Avvia l'applicazione
+CMD ["npm", "start"]
