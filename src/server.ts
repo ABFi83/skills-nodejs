@@ -113,7 +113,7 @@ app.get("/logo/:clientId", (req, res) => {
 app.get("/projects/:id/evaluations-dates", (req, res) =>
   projectController.getEvaluationDates(req, res)
 );
-const port = 3001;
+const port = 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
