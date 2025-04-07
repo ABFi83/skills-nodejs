@@ -21,7 +21,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            cd /home/ec2-user/skill-be
+            cd /home/ec2-user/skills-nodejs
             git pull origin main
             docker compose down
             docker compose up -d --build
