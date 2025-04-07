@@ -23,5 +23,6 @@ jobs:
           script: |
             cd /home/ec2-user/skills-nodejs
             git pull origin main
-            docker compose down
-            docker compose up -d --build
+            docker build -t skills-nodejs .
+            docker stop skills-nodejs || true && docker rm skills-nodejs || true
+            docker run -d --name skills-nodejs -p 3000:3000 skills-nodejs
