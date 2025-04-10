@@ -11,15 +11,12 @@ import {
 import { User } from "./user.entity";
 import { Project } from "./project.entity";
 import { Value } from "./values.entity";
+import { UserProject } from "./userproject.entity";
 
 @Entity()
 export class Evaluation {
   @PrimaryGeneratedColumn()
   id!: number;
-
-  @ManyToOne(() => User, { nullable: false })
-  @JoinTable()
-  user!: User;
 
   @Column()
   startDate!: Date;
@@ -33,9 +30,9 @@ export class Evaluation {
   @Column()
   evaluationDate!: Date; // Data della valutazione con vincolo di unicità
 
-  @ManyToOne(() => Project, { nullable: false, onDelete: "CASCADE" })
+  @ManyToOne(() => UserProject, { nullable: false })
   @JoinTable()
-  project!: Project;
+  userProject!: UserProject;
 
   @OneToMany(() => Value, (value) => value.evaluation, {
     cascade: true,

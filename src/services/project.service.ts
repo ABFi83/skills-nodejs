@@ -55,9 +55,9 @@ export class ProjectService {
           "userProjects",
           "userProjects.project.skills",
           "userProjects.project.client",
-          "userProjects.project.evaluation",
-          "userProjects.project.evaluation.values",
-          "userProjects.project.evaluation.values.skill",
+          "userProjects.evaluation",
+          "userProjects.evaluation.values",
+          "userProjects.evaluation.values.skill",
           "userProjects.role",
           "userProjects.user",
           "userProjects.project.userProjects",
@@ -387,92 +387,87 @@ export class ProjectService {
     userId: number
   ): Promise<ProjectResponse> {
     try {
+      // Recupera il progetto con il singolo userProject associato all'utente
       const project = await this.projectRepository.findOne({
         where: { id: projectId },
         relations: [
           "userProjects",
           "userProjects.role",
+          "userProjects.evaluation",
+          "userProjects.evaluation.values",
+          "userProjects.evaluation.values.skill",
           "userProjects.user",
           "skills",
-          "evaluation",
-          "evaluation.user",
-          "evaluation.values",
-          "evaluation.values.skill",
           "client",
         ],
       });
+
       if (!project) {
         throw new Error("Progetto non trovato.");
       }
 
-      project.evaluation = (
-        project.evaluation?.filter((e) => e.user.id === userId) || []
-      ).sort((a, b) => b.evaluationDate.getTime() - a.evaluationDate.getTime());
+      // Filtra per ottenere solo lo userProject associato all'utente
+      const userProject = project.userProjects?.find(
+        (up) => up.user.id === userId
+      );
 
-      const userRole = project.userProjects?.find(
-        (e) => e.user.id === userId
-      )?.role;
+      if (!userProject) {
+        throw new Error("UserProject non trovato per l'utente specificato.");
+      }
 
-      project.skills = project.skills?.sort((a, b) => b.id - a.id) || [];
+      // Ordina le valutazioni per data decrescente
+      const evaluations = userProject.evaluation
+        ?.sort(
+          (a, b) => b.evaluationDate.getTime() - a.evaluationDate.getTime()
+        )
+        .map((evaluation) => ({
+          id: evaluation.id,
+          startDate: evaluation.startDate,
+          endDate: evaluation.endDate,
+          label: evaluation.evaluationDate.toLocaleDateString(), // Formatta la data
+          ratingAverage: this.calcolaMedia(evaluation.values),
+          close: evaluation.close,
+          values: evaluation.values
+            ? evaluation.values.map((value) => ({
+                id: value.id,
+                skill: value.skill.name,
+                value: value.value,
+              }))
+            : [],
+        }));
 
-      let response: ProjectResponse = {
+      // Costruisci la risposta
+      const response: ProjectResponse = {
         id: project.id,
         projectName: project.name,
         role: {
-          id: userRole ? userRole.id : 0,
-          code: userRole ? userRole.code : "",
-          name: userRole ? userRole.name : "",
+          id: userProject.role.id,
+          code: userProject.role.code,
+          name: userProject.role.name,
         },
         description: project.description,
         users: project.userProjects
-          ? project.userProjects.map((userProject: UserProject) => {
-              let user = {
-                id: userProject.user.id,
-                username: userProject.user.username,
-                name: userProject.user.name,
-                surname: userProject.user.surname,
-                code: userProject.user.code,
-                role: {
-                  id: userProject.role.id,
-                  code: userProject.role.code,
-                  name: userProject.role.name,
-                },
-              };
-              return user;
-            })
+          ? project.userProjects.map((userProject) => ({
+              id: userProject.user.id,
+              username: userProject.user.username,
+              name: userProject.user.name || "",
+              surname: userProject.user.surname || "",
+              code: userProject.user.code,
+              role: {
+                id: userProject.role.id,
+                code: userProject.role.code,
+                name: userProject.role.name,
+              },
+            }))
           : [],
         labelEvaluations: project.skills
-          ? project.skills.map((skill: Skill) => {
-              let label = {
-                id: skill.id,
-                label: skill.name,
-                shortLabel: skill.shortName,
-              };
-              return label;
-            })
+          ? project.skills.map((skill) => ({
+              id: skill.id,
+              label: skill.name,
+              shortLabel: skill.shortName,
+            }))
           : [],
-        evaluations: project.evaluation?.map((evaluation: Evaluation) => {
-          evaluation.values =
-            evaluation.values?.sort((a, b) => b.skill.id - a.skill.id) || [];
-          return {
-            id: evaluation.id,
-            startDate: evaluation.startDate,
-            endDate: evaluation.endDate,
-            label: evaluation.evaluationDate.toLocaleDateString(), //01/01/2024
-            ratingAverage: this.calcolaMedia(evaluation.values),
-            close: evaluation.close,
-            values: evaluation.values
-              ? evaluation.values.map((value: Value) => {
-                  let v = {
-                    id: value.id,
-                    skill: value.skill.name,
-                    value: value.value,
-                  };
-                  return v;
-                })
-              : [],
-          };
-        }),
+        evaluations: evaluations || [],
         client: {
           id: project.client.id,
           code: project.client.code,
@@ -480,13 +475,16 @@ export class ProjectService {
           logo: project.client.file,
         },
       };
+
       return response;
     } catch (error) {
       console.error(
-        "Errore durante il recupero dei progetti per l'utente:",
+        "Errore durante il recupero dei dettagli del progetto:",
         error
       );
-      throw new Error("Non è stato possibile recuperare i progetti.");
+      throw new Error(
+        "Non è stato possibile recuperare i dettagli del progetto."
+      );
     }
   }
 
@@ -522,8 +520,7 @@ export class ProjectService {
             startDate,
             endDate,
             evaluationDate,
-            user: userProject.user,
-            project: project,
+            userProject: userProject,
             close: false,
           });
           // Salva l'entità Evaluation
@@ -591,11 +588,13 @@ export class ProjectService {
 
   async getEvaluationDates(projectId: number): Promise<Date[]> {
     try {
-      // Recupera le valutazioni distinte per utente, ordinate per evaluationDate in ordine decrescente
+      // Recupera le valutazioni distinte per il progetto, ordinate per evaluationDate in ordine decrescente
       const evaluations = await this.evaluationRepository
         .createQueryBuilder("evaluation")
-        .select("evaluation.evaluationDate", "evaluationDate")
-        .where("evaluation.projectId = :projectId", { projectId })
+        .select("DISTINCT evaluation.evaluationDate", "evaluationDate")
+        .innerJoin("evaluation.userProject", "userProject")
+        .innerJoin("userProject.project", "project")
+        .where("project.id = :projectId", { projectId })
         .orderBy("evaluation.evaluationDate", "DESC")
         .getRawMany();
 
@@ -622,71 +621,60 @@ export class ProjectService {
     evaluationDate: string
   ): Promise<EvaluationsLM> {
     try {
-      // Recupera il progetto con le valutazioni, utenti e competenze
+      // Recupera il progetto con i relativi userProjects, valutazioni e competenze
       const project = await this.projectRepository.findOne({
         where: { id: projectId },
         relations: [
           "userProjects",
           "userProjects.user",
           "userProjects.role",
+          "userProjects.evaluation",
+          "userProjects.evaluation.values",
+          "userProjects.evaluation.values.skill",
           "skills",
-          "evaluation",
-          "evaluation.values",
-          "evaluation.values.skill",
-          "evaluation.user",
         ],
       });
 
-      if (
-        !project ||
-        !project.userProjects ||
-        !project.evaluation ||
-        !project.skills
-      ) {
-        throw new Error("Progetto non trovato.");
+      if (!project || !project.userProjects || !project.skills) {
+        throw new Error("Progetto non trovato o struttura non valida.");
       }
 
-      // Filtra gli utenti che non hanno il ruolo "Line Manager" (LM)
-      const nonLmUsers = project.userProjects.filter(
+      // Filtra gli userProjects che non hanno il ruolo "Line Manager" (LM)
+      const nonLmUserProjects = project.userProjects.filter(
         (userProject) => userProject.role.name !== "Line Manager"
       );
 
-      // Filtra le valutazioni per la data specificata
-      const evaluationsForDate = project.evaluation?.filter(
-        (evaluation) =>
-          evaluation.evaluationDate.toISOString().split("T")[0] ===
-          evaluationDate.split("T")[0]
-      );
-
-      if (!evaluationsForDate || evaluationsForDate.length === 0) {
-        throw new Error("Nessuna valutazione trovata per la data specificata.");
-      }
-
-      // Costruisci la lista di EvaluationLM
+      // Lista per raccogliere tutte le valutazioni
       const evaluationLMList: EvaluationLM[] = [];
       const skillSet = new Set<number>(); // Per raccogliere le skill con almeno una valutazione
 
-      for (const userProject of nonLmUsers) {
-        const userEvaluations = evaluationsForDate.filter(
-          (evaluation) => evaluation.user.id === userProject.user.id
+      // Itera su ogni userProject non "Line Manager"
+      for (const userProject of nonLmUserProjects) {
+        // Filtra le valutazioni per la data specificata
+        const evaluationsForDate = userProject.evaluation?.filter(
+          (evaluation) =>
+            evaluation.evaluationDate.toISOString().split("T")[0] ===
+            evaluationDate.split("T")[0]
         );
 
-        for (const evaluation of userEvaluations) {
-          for (const value of evaluation.values || []) {
-            evaluationLMList.push({
-              skillId: value.skill.id.toString(),
-              score: value.value,
-              user: {
-                id: evaluation.user.id,
-                username: evaluation.user.username,
-                name: evaluation.user.name,
-                surname: evaluation.user.surname,
-                code: evaluation.user.code,
-              },
-            });
+        if (evaluationsForDate && evaluationsForDate.length > 0) {
+          for (const evaluation of evaluationsForDate) {
+            for (const value of evaluation.values || []) {
+              evaluationLMList.push({
+                skillId: value.skill.id.toString(),
+                score: value.value,
+                user: {
+                  id: userProject.user.id,
+                  username: userProject.user.username,
+                  name: userProject.user.name,
+                  surname: userProject.user.surname,
+                  code: userProject.user.code,
+                },
+              });
 
-            // Aggiungi la skill all'elenco delle skill valutate
-            skillSet.add(value.skill.id);
+              // Aggiungi la skill all'elenco delle skill valutate
+              skillSet.add(value.skill.id);
+            }
           }
         }
       }

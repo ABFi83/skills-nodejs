@@ -29,12 +29,20 @@ export class EvaluationService {
     try {
       return await this.evaluationRepository.findOne({
         where: {
-          user: { id: userId },
-          project: { id: projectId },
-          close: true, // Solo valutazioni con endDate minore della data odierna
+          userProject: {
+            user: { id: userId },
+            project: { id: projectId },
+          },
+          close: true, // Solo valutazioni chiuse
         },
         order: { evaluationDate: "DESC" }, // Ordina per data in ordine decrescente
-        relations: ["user", "project", "values", "values.skill"], // Carica le relazioni se necessarie
+        relations: [
+          "userProject",
+          "userProject.user",
+          "userProject.project",
+          "values",
+          "values.skill",
+        ], // Carica le relazioni necessarie
       });
     } catch (error) {
       console.error(

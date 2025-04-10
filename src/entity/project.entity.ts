@@ -32,12 +32,6 @@ export class Project {
   @JoinTable()
   skills?: Skill[];
 
-  @OneToMany(() => Evaluation, (evaluation) => evaluation.project, {
-    cascade: true,
-    onDelete: "CASCADE",
-  })
-  evaluation?: Evaluation[];
-
   constructor(name: string) {
     if (name) {
       this.name = name;

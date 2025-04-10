@@ -157,24 +157,26 @@ export class InitService {
       userProject.user = user;
       userProject.project = newProject;
       userProject.role = role;
+      userProject.level = "beginner";
       await this.userProjectRepository.save(userProject);
 
       const userProject1 = new UserProject();
       userProject1.user = user1;
       userProject1.project = newProject;
       userProject1.role = role1;
+      userProject1.level = "beginner";
       await this.userProjectRepository.save(userProject1);
 
       const userProjectLm = new UserProject();
       userProjectLm.user = userLm;
       userProjectLm.project = newProject;
       userProjectLm.role = roleLm;
+      userProjectLm.level = "beginner";
       await this.userProjectRepository.save(userProjectLm);
 
       let evaluation = this.evaluationRepository.create({
         evaluationDate: new Date("2024-02-28"),
-        user: user,
-        project: newProject,
+        userProject: userProject,
         startDate: new Date("2024-02-01"),
         endDate: new Date("2024-02-28"),
         close: true,
@@ -204,8 +206,7 @@ export class InitService {
       yestarday.setDate(yestarday.getDate() - 1);
       let evaluationOld = this.evaluationRepository.create({
         evaluationDate: new Date("2024-01-31"),
-        user: user,
-        project: newProject,
+        userProject: userProject,
         startDate: new Date("2024-01-01"),
         endDate: new Date("2024-01-31"),
         close: true,
@@ -235,8 +236,7 @@ export class InitService {
 
       let evaluation1 = this.evaluationRepository.create({
         evaluationDate: new Date("2024-02-28"),
-        user: user1,
-        project: newProject,
+        userProject: userProject1,
         startDate: new Date("2024-02-28"),
         endDate: new Date("2024-02-28"),
         close: true,
@@ -265,8 +265,7 @@ export class InitService {
       yestarday.setDate(yestarday.getDate() - 1);
       let evaluationOldSn = this.evaluationRepository.create({
         evaluationDate: new Date("2024-01-31"),
-        user: user1,
-        project: newProject,
+        userProject: userProject1,
         startDate: new Date("2024-01-31"),
         endDate: new Date("2024-01-31"),
         close: true,
@@ -306,18 +305,19 @@ export class InitService {
       userProject3.user = user;
       userProject3.project = newProject2;
       userProject3.role = role;
+      userProject3.level = "beginner";
       await this.userProjectRepository.save(userProject3);
 
       const userProjectLm2 = new UserProject();
       userProjectLm2.user = userLm;
       userProjectLm2.project = newProject2;
       userProjectLm2.role = roleLm;
+      userProjectLm2.level = "beginner";
       await this.userProjectRepository.save(userProjectLm2);
 
       let evaluationNP2 = this.evaluationRepository.create({
         evaluationDate: new Date("2024-01-28"),
-        user: user,
-        project: newProject2,
+        userProject: userProject3,
         startDate: new Date("2024-01-28"),
         endDate: new Date("2024-01-28"),
         close: true,
